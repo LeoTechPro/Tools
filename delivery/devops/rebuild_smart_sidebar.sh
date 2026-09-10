@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BRAIN_REPO_ROOT="${BRAIN_REPO_ROOT:-/int/brain}"
+BRAIN_REPO_ROOT="${BRAIN_REPO_ROOT:-/int/core/brain}"
 
 pushd "$BRAIN_REPO_ROOT/web" >/dev/null
 npm ci

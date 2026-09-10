@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=deploy
 Group=devs
-Environment=PROJECT_DIR=/int/brain
+Environment=PROJECT_DIR=/int/core/brain
 Environment=PROJECT_VENV=%E{PROJECT_DIR}/venv
 Environment=ENV_FILE=%E{PROJECT_DIR}/.env
 WorkingDirectory=%E{PROJECT_DIR}

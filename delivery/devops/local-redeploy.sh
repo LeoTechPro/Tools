@@ -6,7 +6,7 @@ log() {
 }
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-BRAIN_REPO_ROOT="${BRAIN_REPO_ROOT:-/int/brain}"
+BRAIN_REPO_ROOT="${BRAIN_REPO_ROOT:-/int/core/brain}"
 TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 REPORT_ROOT="$ROOT/logs/devops/$TIMESTAMP"
 mkdir -p "$REPORT_ROOT"

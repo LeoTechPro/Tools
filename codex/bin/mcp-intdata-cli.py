@@ -18,7 +18,7 @@ IO_MODE = "framed"
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 INT_ROOT = ROOT_DIR.parent
-BRAIN_MCP = INT_ROOT / "brain" / "mcp" / "intbrain" / "bin" / "mcp-intbrain.py"
+BRAIN_MCP = INT_ROOT / "core" / "brain" / "mcp" / "intbrain" / "bin" / "mcp-intbrain.py"
 
 
 def _schema(properties: dict[str, Any], required: list[str] | None = None) -> dict[str, Any]:
@@ -121,8 +121,8 @@ DBA_TOOLS = [
 ]
 
 VAULT_TOOLS = [
-    _tool("intdata_vault_sanitize", "Run vault sanitizer. Defaults to dry-run; non-dry-run requires confirmation.", {**COMMON_RUN_PROPS, **_mutation_props(), "dry_run": {"type": "boolean"}, "vault_root": _path_prop("Vault root. Defaults to D:/int/2brain on this host."), "brain_root": _path_prop("Brain repo root. Defaults to D:/int/brain on this host."), "tools_root": _path_prop("Tools repo root. Defaults to D:/int/tools."), "runtime_root": _path_prop("Runtime vault root override."), "args": _args_prop()}),
-    _tool("intdata_runtime_vault_gc", "Run runtime vault GC. Defaults to dry-run; non-dry-run requires confirmation.", {**COMMON_RUN_PROPS, **_mutation_props(), "dry_run": {"type": "boolean"}, "brain_root": _path_prop("Brain repo root. Defaults to D:/int/brain on this host."), "runtime_root": _path_prop("Runtime vault root override."), "archive_root": _path_prop("Archive root override. Defaults to D:/int/.tmp."), "args": _args_prop()}),
+    _tool("intdata_vault_sanitize", "Run vault sanitizer. Defaults to dry-run; non-dry-run requires confirmation.", {**COMMON_RUN_PROPS, **_mutation_props(), "dry_run": {"type": "boolean"}, "vault_root": _path_prop("Vault root. Defaults to D:/int/2brain on this host."), "brain_root": _path_prop("Brain repo root. Defaults to D:/int/core/brain on this host."), "tools_root": _path_prop("Tools repo root. Defaults to D:/int/tools."), "runtime_root": _path_prop("Runtime vault root override."), "args": _args_prop()}),
+    _tool("intdata_runtime_vault_gc", "Run runtime vault GC. Defaults to dry-run; non-dry-run requires confirmation.", {**COMMON_RUN_PROPS, **_mutation_props(), "dry_run": {"type": "boolean"}, "brain_root": _path_prop("Brain repo root. Defaults to D:/int/core/brain on this host."), "runtime_root": _path_prop("Runtime vault root override."), "archive_root": _path_prop("Archive root override. Defaults to D:/int/.tmp."), "args": _args_prop()}),
 ]
 
 RUNTIME_TOOLS.extend(VAULT_TOOLS)
@@ -483,11 +483,11 @@ def _call_vault(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         argv.append("--apply")
     if name == "intdata_vault_sanitize":
         _append_path_arg(argv, arguments, "vault_root", "--vault-root", INT_ROOT / "2brain")
-        _append_path_arg(argv, arguments, "brain_root", "--brain-root", INT_ROOT / "brain")
+        _append_path_arg(argv, arguments, "brain_root", "--brain-root", INT_ROOT / "core" / "brain")
         _append_path_arg(argv, arguments, "tools_root", "--tools-root", ROOT_DIR)
         _append_path_arg(argv, arguments, "runtime_root", "--runtime-root")
     else:
-        _append_path_arg(argv, arguments, "brain_root", "--brain-root", INT_ROOT / "brain")
+        _append_path_arg(argv, arguments, "brain_root", "--brain-root", INT_ROOT / "core" / "brain")
         _append_path_arg(argv, arguments, "runtime_root", "--runtime-root")
         _append_path_arg(argv, arguments, "archive_root", "--archive-root")
     argv.extend(args)
@@ -592,7 +592,7 @@ def _delegate_intbrain() -> int:
     if not BRAIN_MCP.exists():
         print(json.dumps({"ok": False, "error": "config_error", "message": f"brain-owned intbrain MCP not found: {BRAIN_MCP}"}), file=sys.stderr)
         return 2
-    print("warning: /int/tools intbrain profile is deprecated; delegating to /int/brain/mcp/intbrain", file=sys.stderr)
+    print("warning: /int/tools intbrain profile is deprecated; delegating to /int/core/brain/mcp/intbrain", file=sys.stderr)
     os.execv(sys.executable, [sys.executable, str(BRAIN_MCP), "--stdio"])
     return 0
 
