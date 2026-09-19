@@ -7,10 +7,8 @@
     {
       "name": "intnode",
       "source": {
-        "source": "git-subdir",
-        "url": "https://github.com/LeoTechPro/Tools.git",
-        "path": "./codex/plugins/intnode",
-        "ref": "f548a8727546473005627ba8480b037db4c0d0cc"
+        "source": "local",
+        "path": "./codex/plugins/intnode"
       },
       "policy": {
         "installation": "AVAILABLE",

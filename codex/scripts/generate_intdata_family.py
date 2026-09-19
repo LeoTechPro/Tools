@@ -878,19 +878,28 @@ def marketplace_source_url(plugin: dict[str, Any]) -> str:
     return f"git@github.com:{owner}/{repo}.git"
 
 
+def marketplace_plugin_source(manifest: dict[str, Any], plugin: dict[str, Any]) -> dict[str, str]:
+    provenance = plugin.get("distribution") or plugin["provenance"]
+    path = f"./{provenance['subdir']}"
+    if canonical_remote(provenance["repository"]) == canonical_remote(
+        manifest["marketplace"]["repository"]
+    ):
+        return {"source": "local", "path": path}
+    return {
+        "source": "git-subdir",
+        "url": marketplace_source_url(plugin),
+        "path": path,
+        "ref": provenance["commit"],
+    }
+
+
 def build_marketplace(manifest: dict[str, Any]) -> dict[str, Any]:
     entries = []
     for plugin in sorted(manifest["plugins"], key=lambda item: item["id"]):
-        provenance = plugin.get("distribution") or plugin["provenance"]
         entries.append(
             {
                 "name": plugin["id"],
-                "source": {
-                    "source": "git-subdir",
-                    "url": marketplace_source_url(plugin),
-                    "path": f"./{provenance['subdir']}",
-                    "ref": provenance["commit"],
-                },
+                "source": marketplace_plugin_source(manifest, plugin),
                 "policy": {
                     "installation": (
                         "AVAILABLE"
