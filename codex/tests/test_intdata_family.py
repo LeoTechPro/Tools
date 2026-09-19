@@ -51,14 +51,29 @@ def test_intnode_marketplace_uses_public_tools_distribution(release_state: str) 
 
     assert intnode["provenance"]["repository"] == "https://github.com/LeoTechPro/intData-node.git"
     assert entry["source"] == {
-        "source": "git-subdir",
-        "url": "https://github.com/LeoTechPro/Tools.git",
+        "source": "local",
         "path": "./codex/plugins/intnode",
-        "ref": "f548a8727546473005627ba8480b037db4c0d0cc",
     }
     assert entry["policy"] == {
         "installation": "AVAILABLE",
         "authentication": "ON_USE",
+    }
+
+
+def test_external_distribution_keeps_immutable_git_subdir_source() -> None:
+    manifest, _schema = load_inputs()
+    manifest["marketplace"]["repository"] = "https://github.com/LeoTechPro/catalog.git"
+
+    entry = next(
+        plugin for plugin in family.build_marketplace(manifest)["plugins"]
+        if plugin["name"] == "intnode"
+    )
+
+    assert entry["source"] == {
+        "source": "git-subdir",
+        "url": "https://github.com/LeoTechPro/Tools.git",
+        "path": "./codex/plugins/intnode",
+        "ref": "f548a8727546473005627ba8480b037db4c0d0cc",
     }
 
 
@@ -449,10 +464,13 @@ def test_checked_in_marketplace_is_exact_family_projection() -> None:
         "intnode": "AVAILABLE",
     }
     assert {
-        entry["name"]: entry["source"]["url"]
+        entry["name"]: entry["source"]
         for entry in marketplace["plugins"]
     } == {
-        "intnode": "https://github.com/LeoTechPro/Tools.git",
+        "intnode": {
+            "source": "local",
+            "path": "./codex/plugins/intnode",
+        },
     }
     assert not LEGACY_MARKETPLACE.exists()
 
@@ -610,8 +628,8 @@ def test_release_outputs_are_deterministic_and_bound_by_one_hash(tmp_path: Path)
     )
     assert marketplace["name"] == "inttools"
     assert [entry["name"] for entry in marketplace["plugins"]] == ["intnode"]
-    assert all(len(entry["source"]["ref"]) == 40 for entry in marketplace["plugins"])
-    assert all(entry["source"]["source"] == "git-subdir" for entry in marketplace["plugins"])
+    assert all(entry["source"]["source"] == "local" for entry in marketplace["plugins"])
+    assert all("ref" not in entry["source"] for entry in marketplace["plugins"])
     assert all(
         entry["policy"]["installation"] == "AVAILABLE"
         for entry in marketplace["plugins"]
