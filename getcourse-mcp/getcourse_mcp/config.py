@@ -68,7 +68,9 @@ class Config:
     @classmethod
     def load(cls) -> "Config":
         root_dir = Path(__file__).resolve().parents[1]
-        load_env_file(root_dir / ".env")
+        env_file = os.getenv("GETCOURSE_ENV_FILE")
+        if env_file:
+            load_env_file(Path(env_file))
 
         domain = (
             os.getenv("GETCOURSE_ACCOUNT_DOMAIN")

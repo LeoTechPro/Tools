@@ -20,14 +20,14 @@ description: "Безопасная работа с API GetCourse для punkt-b.
 
 ## Где лежат данные проекта punkt-b.pro
 
-- Локальные ключи интеграций хранятся в: `/int/platform/.env`.
+- Действующий GetCourse MCP получает ключ из защищённого `/home/dev/.hermes/secrets/punkt-b/getcourse/secrets.env`; ручной запуск может получить его через переменные окружения или `GETCOURSE_ENV_FILE` с путём к файлу вне checkout.
 - Переменная Bitrix24: `BITRIX_WEBHOOK_BASE_URL`.
-- Переменная GetCourse LMS: `GETCOURSE_LMS_PUNKTB_PRO_API_KEY`.
+- Основная переменная GetCourse: `GETCOURSE_API_KEY`; старые алиасы `GETCOURSE_LMS_PUNCTB_PRO_API_KEY` и `GETCOURSE_LMS_PUNKTB_PRO_API_KEY` также поддерживаются.
 - Значения секретов не коммитить и не дублировать в markdown/репозиторий.
 
 ## Обезличенный безопасный workflow
 
-1. Убедись, что ключ присутствует в `.env` (выводи только имя переменной, без значения).
+1. Убедись, что ключ доступен из защищённого внешнего файла или окружения (выводи только имя переменной, без значения).
 2. Сверь тип ключа в интерфейсе GetCourse: `https://<ACCOUNT_DOMAIN>/saas/account/api`.
 3. Для безрисковой диагностики используй только экспортные/read-only методы.
 4. Если требуется тест API-запроса, начинай с чтения групп:

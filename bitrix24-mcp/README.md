@@ -34,13 +34,18 @@ secret store; diagnostics and errors redact the webhook auth path.
 
 ## Configuration
 
-Use an external runtime secret store or a local ignored `.env` file:
+Use an external runtime secret store or set `BITRIX_ENV_FILE` to the absolute
+path of a protected file outside the checkout, for example
+`~/.config/intdata/credentials/bitrix24.env` with mode `0600`:
 
 ```env
 BITRIX_WEBHOOK_URL=https://example.bitrix24.ru/rest/1/webhook-code/
 ```
 
 `BITRIX_WEBHOOK_BASE_URL` is also accepted.
+
+The source entrypoint never auto-loads a checkout-local `.env`. The installed
+MCP launcher loads its host secret store separately.
 
 Do not commit real webhook URLs.
 

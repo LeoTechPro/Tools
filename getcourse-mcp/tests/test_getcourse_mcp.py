@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import os
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -11,6 +13,18 @@ from getcourse_mcp import api_manifest, client, config, server
 
 
 class GetCourseClientTests(unittest.TestCase):
+    def test_config_loads_only_explicit_external_env_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / ".env").write_text("GETCOURSE_API_KEY=checkout-secret\n")
+            external = root / "external.env"
+            external.write_text("GETCOURSE_API_KEY=external-secret\n")
+            with mock.patch.object(config, "__file__", str(root / "getcourse_mcp" / "config.py")):
+                with mock.patch.dict(os.environ, {"GETCOURSE_ENV_FILE": str(external)}, clear=True):
+                    self.assertEqual(config.Config.load().api_key, "external-secret")
+                with mock.patch.dict(os.environ, {}, clear=True):
+                    self.assertIsNone(config.Config.load().api_key)
+
     def test_domain_normalization_accepts_hostname_and_rejects_paths(self) -> None:
         self.assertEqual(config.normalize_domain("https://school.example.test/"), "school.example.test")
         with self.assertRaises(ValueError):

@@ -47,7 +47,9 @@ class Config:
     @classmethod
     def load(cls) -> "Config":
         root_dir = Path(__file__).resolve().parents[1]
-        load_env_file(root_dir / ".env")
+        env_file = os.getenv("BITRIX_ENV_FILE")
+        if env_file:
+            load_env_file(Path(env_file))
         webhook_url = (
             os.getenv("BITRIX_WEBHOOK_URL")
             or os.getenv("BITRIX_WEBHOOK_BASE_URL")

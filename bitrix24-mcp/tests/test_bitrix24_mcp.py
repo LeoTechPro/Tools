@@ -1,16 +1,31 @@
 from __future__ import annotations
 
 import asyncio
+import os
+import tempfile
 import unittest
+from pathlib import Path
 from unittest import mock
 
 import httpx
 
-from bitrix24_mcp import api_manifest, client, server
+from bitrix24_mcp import api_manifest, client, config, server
 from scripts import update_api_manifest
 
 
 class Bitrix24ClientTests(unittest.TestCase):
+    def test_config_loads_only_explicit_external_env_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / ".env").write_text("BITRIX_WEBHOOK_URL=https://checkout.example.test/rest/1/secret/\n")
+            external = root / "external.env"
+            external.write_text("BITRIX_WEBHOOK_URL=https://external.example.test/rest/1/secret/\n")
+            with mock.patch.object(config, "__file__", str(root / "bitrix24_mcp" / "config.py")):
+                with mock.patch.dict(os.environ, {"BITRIX_ENV_FILE": str(external)}, clear=True):
+                    self.assertEqual(config.Config.load().webhook_url, "https://external.example.test/rest/1/secret/")
+                with mock.patch.dict(os.environ, {}, clear=True):
+                    self.assertEqual(config.Config.load().webhook_url, "")
+
     def test_allows_read_only_methods(self) -> None:
         self.assertEqual(client.normalize_method("crm.deal.get"), "crm.deal.get")
         self.assertEqual(client.normalize_method("crm.timeline.comment.list.json"), "crm.timeline.comment.list")

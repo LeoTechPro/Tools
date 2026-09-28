@@ -6,17 +6,23 @@ tracks the complete documented Import/Export surface and its MCP coverage.
 Read-only tools are the default surface. Write tools are limited to documented
 Import API endpoints and require `confirm_write=True` on every call.
 
-The server never stores secrets in tracked files. Put local credentials into `.env`
-next to this README or provide them through the process environment.
+The server never stores secrets in the source checkout. Provide credentials
+through the process environment or point `GETCOURSE_ENV_FILE` to a protected
+file outside the checkout. The installed MCP launcher uses the host secret
+store independently of this source entrypoint.
 
 ## Configuration
 
-Copy `.env.example` to `.env` and fill:
+Create a protected external file, for example
+`~/.config/intdata/credentials/getcourse.env`, with mode `0600`:
 
 ```env
 GETCOURSE_ACCOUNT_DOMAIN=your-account.getcourse.ru
 GETCOURSE_API_KEY=your-getcourse-api-key
 ```
+
+Set `GETCOURSE_ENV_FILE` to its absolute path before a manual run. The source
+entrypoint never auto-loads a checkout-local `.env`.
 
 Older punctb variable names are also accepted:
 
