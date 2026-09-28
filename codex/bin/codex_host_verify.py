@@ -49,14 +49,16 @@ def default_runtime_root() -> Path:
     explicit = os.environ.get("CODEX_RUNTIME_ROOT", "").strip()
     if explicit:
         return Path(explicit).expanduser().resolve()
-    return (REPO_ROOT / ".runtime").resolve()
+    if current_platform() == "windows":
+        return (REPO_ROOT / ".runtime").resolve()
+    return (Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / "intdata-tools").resolve()
 
 
 def default_cloud_root() -> Path:
     explicit = os.environ.get("CLOUD_ROOT", "").strip()
     if explicit:
         return Path(explicit).expanduser().resolve()
-    return (resolve_int_root() / "cloud").resolve()
+    return (resolve_int_root() / "cloud").resolve() if current_platform() == "windows" else (Path.home() / "vfs" / "intdata").resolve()
 
 
 def main() -> int:

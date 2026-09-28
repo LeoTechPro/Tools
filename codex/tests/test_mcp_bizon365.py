@@ -20,14 +20,16 @@ class Bizon365ModuleTest(unittest.TestCase):
     def test_defaults_do_not_use_codex_home(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             runtime_root = Path(tmp_dir) / "runtime"
-            previous_env = {key: os.environ.get(key) for key in ("CODEX_RUNTIME_ROOT", "CODEX_SECRETS_ROOT")}
+            config_root = Path(tmp_dir) / "config"
+            previous_env = {key: os.environ.get(key) for key in ("CODEX_RUNTIME_ROOT", "CODEX_SECRETS_ROOT", "XDG_CONFIG_HOME")}
             try:
                 os.environ["CODEX_RUNTIME_ROOT"] = str(runtime_root)
                 os.environ.pop("CODEX_SECRETS_ROOT", None)
+                os.environ["XDG_CONFIG_HOME"] = str(config_root)
 
                 self.assertEqual(
                     MODULE.resolve_default_env_path(),
-                    runtime_root / "codex-secrets" / "bizon365-punkt-b.env",
+                    config_root / "intdata" / "credentials" / "bizon365-punkt-b.env",
                 )
                 self.assertNotIn(".codex", str(MODULE.resolve_default_env_path()))
             finally:

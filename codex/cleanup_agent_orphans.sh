@@ -2,7 +2,7 @@
 set -euo pipefail
 
 MIN_AGE_SECONDS="${MIN_AGE_SECONDS:-900}"
-CODEX_RUNTIME_ROOT="${CODEX_RUNTIME_ROOT:-/home/dev/int/tools/.runtime}"
+CODEX_RUNTIME_ROOT="${CODEX_RUNTIME_ROOT:-${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools}"
 LOCK_FILE="${CODEX_ORPHAN_CLEANER_LOCK_FILE:-$CODEX_RUNTIME_ROOT/codex/tmp/probe-agent-orphan-cleaner.lock}"
 LOG_FILE="${CODEX_ORPHAN_CLEANER_LOG_FILE:-$CODEX_RUNTIME_ROOT/codex/log/probe-agent-orphan-cleaner.log}"
 DRY_RUN=0

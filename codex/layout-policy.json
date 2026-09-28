@@ -22,7 +22,6 @@
     "openclaw/ops/verify.sh"
   ],
   "required_runtime_dirs": [
-    "codex-secrets",
     "cloud-access"
   ],
   "required_cloud_dirs": [

@@ -89,7 +89,7 @@ The validator checks that every tracked non-hidden top-level directory is presen
 - Codex v2rayA recovery source lives in `codex/bin/v2raya-codex-health.sh` and `codex/bin/v2raya-core-hook-remove-quic.sh`; canonical runbook: `codex/docs/runbooks/v2raya-codex-recovery.md`;
 - tracked Firefox MCP overlays для конкретных контуров живут только в `codex/projects/*/.mcp.json`;
 - machine-readable routing registry для repo-owned high-risk capabilities живёт в `codex/config/agent-tool-routing.v1.json`, а resolver/validator CLI — в `codex/bin/agent_tool_routing.py`;
-- canonical runtime layout dedicated Firefox MCP: `/home/dev/int/tools/.runtime/firefox-mcp/profiles/<profile>/`, `/home/dev/int/tools/.runtime/firefox-mcp/logs/<profile>/`, `/home/dev/int/tools/.runtime/firefox-mcp/run/<profile>.json`;
+- canonical runtime layout dedicated Firefox MCP: `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/firefox-mcp/{profiles,logs,run}/`;
 - `codex/tools/mcp-obsidian-memory/` содержит локальный MCP-сервер для vault `/2brain`;
 - `codex/tools/obsidian-desktop/` хранит repo-managed launcher и desktop config для Obsidian;
 - `codex/assets/codex-home/skills/javascript/` хранит repo-managed resources, scripts и templates для JavaScript skill assets;
@@ -206,31 +206,31 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 - Канонические Codex-facing wrapper'ы и install/ops-обвязка живут в `/home/dev/int/tools/codex`.
 - Legacy managed assets для старого Codex home overlay могут оставаться только как historical/read-only reference; они не являются active sync source.
 - Project overlays для старого `~/.codex/projects/*` не синхронизируются repo scripts; используйте native Codex plugin/skill/config mechanisms.
-- Runtime/log/tmp/state repo-owned tooling живут вне git, в `/home/dev/int/tools/.runtime/**`.
-- Секретные env-файлы MCP живут не в `~/.codex/var`, а в `/home/dev/int/tools/.runtime/codex-secrets/`; active helpers не используют legacy Codex-home fallback.
+- Пользовательское состояние tooling живёт вне checkout: `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/`; конфигурация и секреты — в `${XDG_CONFIG_HOME:-$HOME/.config}/intdata/credentials/` с закрытыми правами.
+- Исторические `.runtime/**` и `~/.codex/var` не являются источниками секретов для новых запусков.
 - Любые cron/systemd записи должны ссылаться на файлы из этого каталога, а не на продуктовые репозитории.
-- Канонический cron entrypoint для orphan cleaner: `/home/dev/int/tools/codex/cleanup_agent_orphans.sh`; lock/log writes go to `/home/dev/int/tools/.runtime/codex/**`.
+- Канонический cron entrypoint для orphan cleaner: `/home/dev/int/tools/codex/cleanup_agent_orphans.sh`; lock/log writes go to `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/codex/**`.
 - `~/.codex/scripts/cleanup-agent-orphans.sh` допустим только как legacy compatibility wrapper для старых вызовов, без source-of-truth логики.
 - Codex-home sync/detach scripts were removed: Codex home changes require native Codex mechanisms or explicit manual owner action.
 - Для clean-room восстановления используйте `/home/dev/int/tools/codex/bin/codex-host-bootstrap`, `/home/dev/int/tools/codex/bin/codex-host-verify` и `/home/dev/int/tools/codex/bin/codex-recovery-bundle`.
 
 ##### Канонические runtime-path
 
-- логи repo-owned tooling: `/home/dev/int/tools/.runtime/codex/log/`
-- временные файлы repo-owned tooling: `/home/dev/int/tools/.runtime/codex/tmp/`
+- логи repo-owned tooling: `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/codex/log/`
+- временное состояние repo-owned tooling: `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/codex/tmp/`; одноразовые сборки и тесты — `/home/dev/tmp/`
 - OpenClaw runtime: `~/.openclaw/`
 - OpenClaw overlay/runbooks: `/home/dev/int/tools/openclaw/`
 - прочий Codex runtime/state: Codex-owned `~/.codex/`, изменяется только native Codex mechanisms или explicit manual owner action
-- Codex MCP secrets runtime: `/home/dev/int/tools/.runtime/codex-secrets/`
-- Cloud runtime: `/home/dev/int/tools/.runtime/cloud-access/`
+- MCP credentials: `${XDG_CONFIG_HOME:-$HOME/.config}/intdata/credentials/`
+- Cloud state/logs: `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/cloud-access/`; rclone config: `${XDG_CONFIG_HOME:-$HOME/.config}/rclone/rclone.conf`
 
 ##### Текущие утилиты
 
-- `duplex_bridge.py` — debate-bridge; по умолчанию пишет лог в `/home/dev/int/tools/.runtime/codex/log/debate/duplex_bridge.log`
+- `duplex_bridge.py` — debate-bridge; его текущий default ещё указывает в checkout из незавершённой чужой правки. До согласованного исправления задавайте `CODEX_RUNTIME_ROOT` вне checkout.
 - `cleanup_agent_orphans.sh` — уборка осиротевших MCP/agent процессов
 - `install_orphan_cleaner_cron.sh` — установка канонической cron-записи на `/home/dev/int/tools/codex/cleanup_agent_orphans.sh`
-- `cloud_access.sh` — ленивый доступ к `gdrive`/`yadisk` через `rclone mount` и единый runtime `RCLONE_CONFIG=/home/dev/int/tools/.runtime/cloud-access/rclone.conf`
-- `install_cloud_access.sh` — развёртывание runtime-каталогов `/home/dev/int/tools/.runtime/cloud-access`, mountpoints `/home/dev/int/cloud/*` и user-level symlink units
+- `cloud_access.sh` — ручной доступ к `gdrive`/`yadisk` через стандартный пользовательский `rclone` config, XDG cache/state и mountpoints `~/vfs/intdata/*`.
+- `install_cloud_access.sh` — готовит только внешние пользовательские каталоги; unit-файлы `codex/systemd/` устанавливаются отдельно по явному решению, без ссылок на checkout.
 - `bin/` — MCP entrypoints и прочие Codex-facing launcher'ы
 - Local delivery publish wrappers were removed; use explicit native commands and the target repo's current documented process for owner-requested push/deploy work.
 - `bin/agent_tool_routing.py` + `../config/agent-tool-routing.v1.json` — routing contract для repo-owned high-risk capabilities; blocked path не подменяется verified skill автоматически, fallback допустим только как explicit approved metadata.
@@ -238,7 +238,7 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 - `assets/codex-home/` — legacy reference для старого Codex home overlay; не active sync source
 - `projects/` — legacy reference для старых project-specific overlay-файлов; не синхронизируется repo scripts
 - Codex-home sync/detach entrypoints were removed; use native Codex mechanisms or explicit manual owner action.
-- `bin/codex-host-bootstrap` — bootstrap рабочего минимума `/home/dev/int/tools/.runtime/**`, OpenClaw/cloud tooling; не пишет в Codex home
+- `bin/codex-host-bootstrap` — bootstrap рабочего минимума вне checkout, OpenClaw/cloud tooling; не пишет в Codex home
 - `bin/codex-host-verify` — проверка clean layout и целостности ссылок
 - `bin/codex-recovery-bundle` — export/import шифрованного recovery-бандла с секретным runtime-слоем
 
@@ -247,7 +247,7 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 - `~/.codex` должен содержать только Codex-generated runtime/state и файлы, созданные native documented Codex mechanisms или explicit manual owner action.
 - Наши wrapper'ы, templates и policy остаются в `/home/dev/int/tools/codex`.
 - Самописные helper scripts для Codex не храним в `~/.codex/scripts`; home-контур допускается только для native tools и обязательных runtime instructions/compat wrappers, если их нельзя вынести из home-layout.
-- Живые секреты для MCP храним в `/home/dev/int/tools/.runtime/codex-secrets/`.
+- Живые секреты для MCP храним в `${XDG_CONFIG_HOME:-$HOME/.config}/intdata/credentials/`.
 - `OpenClaw` runtime живёт в `~/.openclaw`, а versioned overlay остаётся в `/home/dev/int/tools/openclaw`.
 - Секретный слой OpenClaw для recovery bundle берётся из `~/.openclaw/secrets/`.
 - Repo scripts do not synchronize `assets/codex-home` or tracked `projects/` into Codex home.
@@ -257,23 +257,15 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 
 1. Установить `codex-cli`.
 2. Восстановить секретный слой через `codex-recovery-bundle import`.
-3. Запустить `/home/dev/int/tools/codex/bin/codex-host-bootstrap` для repo-local runtime bootstrap без изменения Codex home.
+3. Запустить `/home/dev/int/tools/codex/bin/codex-host-bootstrap` для внешнего пользовательского runtime bootstrap без изменения Codex home.
 4. При необходимости выполнить `codex login`.
 5. Проверить контур через `/home/dev/int/tools/codex/bin/codex-host-verify` и `/home/dev/int/tools/openclaw/ops/verify.sh`.
 
 ##### Cloud Access
 
-- Канонические unit-файлы лежат в `/home/dev/int/tools/codex/systemd/` и подключаются в `~/.config/systemd/user/` через symlink.
-- Исключение для этого контура согласовано отдельно: runtime mountpoints и `rclone` config живут внутри `/home/dev/int`, а не в `~/.codex`, чтобы Codex/OpenClaw работали с облаками через уже разрешённый файловый корень.
-- Основной runtime:
-  - config: `/home/dev/int/tools/.runtime/cloud-access/rclone.conf`
-  - cache: `/home/dev/int/tools/.runtime/cloud-access/cache`
-  - logs: `/home/dev/int/tools/.runtime/cloud-access/log`
-  - mounts: `/home/dev/int/cloud/gdrive`, `/home/dev/int/cloud/yadisk`
-- После настройки remotes используйте:
-  - `/home/dev/int/tools/codex/cloud_access.sh config`
-  - `systemctl --user start rclone-mount-gdrive.service`
-  - `systemctl --user start rclone-mount-yadisk.service`
+- Действующий Google Drive VFS пользователя `dev` — отдельный `rclone-gdrive-vfs.service`, с конфигурацией `/home/dev/.config/rclone/rclone.conf` и mountpoint `/home/dev/vfs`.
+- Ручной `cloud_access.sh` использует пользовательские XDG state/cache, `~/.config/rclone/rclone.conf` и `~/vfs/intdata/{gdrive,yadisk}`. `install_cloud_access.sh` только готовит каталоги и не включает сервисы.
+- Исходные unit-шаблоны в `/home/dev/int/tools/codex/systemd/` вызывают `/usr/bin/rclone` напрямую; перед установкой отдельного mount нужно настроить соответствующий remote, скопировать unit в пользовательский systemd и явно включить его. Исторические symlink units пользователя `leon` на `/int/tools/...` выведены из эксплуатации.
 
 ### `codex/assets/codex-home/skills/javascript/resources/`
 
@@ -297,7 +289,7 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 - этот каталог — legacy reference для project overlays; active Codex project config должен идти через native Codex mechanisms;
 - repo scripts не синхронизируют этот каталог в Codex home;
 - в tracked overlay не храним секреты;
-- реальные env-файлы живут в `/home/dev/int/tools/.runtime/codex-secrets/`.
+- реальные env-файлы живут в `${XDG_CONFIG_HOME:-$HOME/.config}/intdata/credentials/` и не копируются из этого legacy overlay.
 - browser-proof overlays для dedicated Firefox MCP обязаны вызывать только repo-managed wrapper'ы из `/home/dev/int/tools/codex/bin/**`, а не raw `npx`.
 
 ### `codex/tools/mcp-obsidian-memory/`

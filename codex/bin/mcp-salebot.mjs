@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Server } from "../tools/mcp-obsidian-memory/node_modules/@modelcontextprotocol/sdk/dist/esm/server/index.js";
@@ -8,7 +9,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from "../tools/mcp-obsi
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const primaryEnvPath = path.resolve(process.env.CODEX_SECRETS_ROOT || "/int/tools/.runtime/codex-secrets", "salebot-punkt-b.env");
+const primaryEnvPath = path.resolve(process.env.CODEX_SECRETS_ROOT || path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"), "intdata", "credentials"), "salebot-punkt-b.env");
 const defaultEnvPath = primaryEnvPath;
 
 function loadEnvFile(filePath) {

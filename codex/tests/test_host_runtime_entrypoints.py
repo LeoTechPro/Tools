@@ -66,7 +66,7 @@ class HostRuntimeEntrypointsTest(unittest.TestCase):
             original_root_dir = host_bootstrap.ROOT_DIR
             original_verify_repo_root = host_verify.REPO_ROOT
             original_recovery_file = recovery_bundle.__file__
-            previous_env = {key: os.environ.get(key) for key in ("INT_ROOT", "CODEX_RUNTIME_ROOT", "CLOUD_ROOT", "BRAIN_ROOT")}
+            previous_env = {key: os.environ.get(key) for key in ("INT_ROOT", "CODEX_RUNTIME_ROOT", "CLOUD_ROOT", "BRAIN_ROOT", "XDG_STATE_HOME")}
 
             try:
                 host_bootstrap.REPO_ROOT = tools_root
@@ -76,9 +76,10 @@ class HostRuntimeEntrypointsTest(unittest.TestCase):
                 os.environ["INT_ROOT"] = str(temp_root / "sandbox" / "int")
                 os.environ.pop("CODEX_RUNTIME_ROOT", None)
                 os.environ.pop("CLOUD_ROOT", None)
-                self.assertEqual(host_bootstrap.default_runtime_root(), temp_root / "sandbox" / "int" / "tools" / ".runtime")
-                self.assertEqual(host_verify.default_runtime_root(), temp_root / "sandbox" / "int" / "tools" / ".runtime")
-                self.assertEqual(recovery_bundle.default_runtime_root(), temp_root / "sandbox" / "int" / "tools" / ".runtime")
+                os.environ["XDG_STATE_HOME"] = str(temp_root / "state")
+                self.assertEqual(host_bootstrap.default_runtime_root(), temp_root / "state" / "intdata-tools")
+                self.assertEqual(host_verify.default_runtime_root(), temp_root / "state" / "intdata-tools")
+                self.assertEqual(recovery_bundle.default_runtime_root(), temp_root / "state" / "intdata-tools")
             finally:
                 host_bootstrap.REPO_ROOT = original_repo_root
                 host_bootstrap.ROOT_DIR = original_root_dir
@@ -95,20 +96,21 @@ class HostRuntimeEntrypointsTest(unittest.TestCase):
             temp_root = Path(temp_root_raw)
             codex_home = temp_root / "codex-home"
             runtime_root = temp_root / "runtime"
-            previous_env = {key: os.environ.get(key) for key in ("CODEX_HOME", "CODEX_RUNTIME_ROOT")}
+            previous_env = {key: os.environ.get(key) for key in ("CODEX_HOME", "CODEX_RUNTIME_ROOT", "XDG_CONFIG_HOME")}
             previous_argv = sys.argv[:]
             original_run_checked = host_bootstrap.run_checked
 
             try:
                 os.environ["CODEX_HOME"] = str(codex_home)
                 os.environ["CODEX_RUNTIME_ROOT"] = str(runtime_root)
+                os.environ["XDG_CONFIG_HOME"] = str(temp_root / "config")
                 sys.argv = ["codex_host_bootstrap.py", "--verify-only"]
                 host_bootstrap.run_checked = lambda *args, **kwargs: None
 
                 self.assertEqual(host_bootstrap.main(), 0)
                 self.assertFalse((codex_home / "config.toml").exists())
                 self.assertFalse((codex_home / "AGENTS.md").exists())
-                self.assertTrue((runtime_root / "codex-secrets").is_dir())
+                self.assertTrue((temp_root / "config" / "intdata" / "credentials").is_dir())
             finally:
                 host_bootstrap.run_checked = original_run_checked
                 sys.argv = previous_argv

@@ -4,7 +4,7 @@
       "command": "bash",
       "args": [
         "-lc",
-        "set -a; if [ -f /home/dev/int/tools/.runtime/codex-secrets/bizon365-punkt-b.env ]; then . /home/dev/int/tools/.runtime/codex-secrets/bizon365-punkt-b.env; elif [ -f \"$HOME/.codex/var/bizon365-punkt-b.env\" ]; then . \"$HOME/.codex/var/bizon365-punkt-b.env\"; fi; set +a; export BIZON365_MCP_CLIENT_PROFILE=\"${BIZON365_MCP_CLIENT_PROFILE:-codex}\"; exec python3 /home/dev/int/tools/codex/bin/mcp-bizon365.py"
+        "set -a; ENV_ROOT=\"${CODEX_SECRETS_ROOT:-${XDG_CONFIG_HOME:-$HOME/.config}/intdata/credentials}\"; if [ -f \"$ENV_ROOT/bizon365-punkt-b.env\" ]; then . \"$ENV_ROOT/bizon365-punkt-b.env\"; fi; set +a; export BIZON365_MCP_CLIENT_PROFILE=\"${BIZON365_MCP_CLIENT_PROFILE:-codex}\"; exec python3 /home/dev/int/tools/codex/bin/mcp-bizon365.py"
       ]
     },
     "salebot": {

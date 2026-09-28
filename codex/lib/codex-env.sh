@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CODEX_RUNTIME_ROOT="${CODEX_RUNTIME_ROOT:-/home/dev/int/tools/.runtime}"
-CODEX_SECRETS_ROOT="${CODEX_SECRETS_ROOT:-$CODEX_RUNTIME_ROOT/codex-secrets}"
+CODEX_RUNTIME_ROOT="${CODEX_RUNTIME_ROOT:-${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools}"
+CODEX_SECRETS_ROOT="${CODEX_SECRETS_ROOT:-${XDG_CONFIG_HOME:-$HOME/.config}/intdata/credentials}"
 
 codex_primary_env_hint() {
   local name="$1"

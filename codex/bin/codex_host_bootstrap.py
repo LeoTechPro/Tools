@@ -54,14 +54,16 @@ def default_runtime_root() -> Path:
     explicit = os.environ.get("CODEX_RUNTIME_ROOT", "").strip()
     if explicit:
         return Path(explicit).expanduser().resolve()
-    return (REPO_ROOT / ".runtime").resolve()
+    if current_platform() == "windows":
+        return (REPO_ROOT / ".runtime").resolve()
+    return (Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / "intdata-tools").resolve()
 
 
 def default_cloud_root() -> Path:
     explicit = os.environ.get("CLOUD_ROOT", "").strip()
     if explicit:
         return Path(explicit).expanduser().resolve()
-    return (resolve_int_root() / "cloud").resolve()
+    return (resolve_int_root() / "cloud").resolve() if current_platform() == "windows" else (Path.home() / "vfs" / "intdata").resolve()
 
 
 def default_brain_root() -> Path:
@@ -200,10 +202,11 @@ def main() -> int:
     assert_binding("codex-host-bootstrap", args.binding_origin)
 
     runtime_root = default_runtime_root()
-    secrets_root = Path(os.environ.get("CODEX_SECRETS_ROOT", runtime_root / "codex-secrets")).expanduser()
+    default_secrets_root = runtime_root / "codex-secrets" if current_platform() == "windows" else Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "intdata" / "credentials"
+    secrets_root = Path(os.environ.get("CODEX_SECRETS_ROOT", default_secrets_root)).expanduser()
 
     runtime_root.mkdir(parents=True, exist_ok=True)
-    secrets_root.mkdir(parents=True, exist_ok=True)
+    secrets_root.mkdir(mode=0o700, parents=True, exist_ok=True)
 
     if not args.verify_only:
         if not args.skip_tools:

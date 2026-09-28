@@ -14,10 +14,10 @@
 
 ## Секреты и запуск
 
-Ключ не хранится в репозитории или MCP-конфигурации. ПК runner читает Windows Credential Manager через `.runtime/credentials/unisender-api-credential.ps1`, VDS — зашифрованный `systemd-creds` credential через `.runtime/credentials/unisender-api-credential`.
+Ключ не хранится в репозитории или MCP-конфигурации. ПК runner читает Windows Credential Manager; VDS установленный запускатель получает защищённый credential через helper в `/usr/local/lib/intdata/mcp-credential-helpers/`.
 
 ПК Codex: `codex mcp add unisender -- cmd /c D:\int\tools\unisender-mcp\run-unisender-mcp.cmd`
 
-VDS Codex: `codex mcp add unisender -- /int/tools/.runtime/mcp-launchers/unisender.sh`
+VDS Codex: `codex mcp add unisender -- /usr/local/lib/intdata/mcp-python/releases/79cf7b0/launchers/unisender.sh`
 
 Hermes использует те же launchers.

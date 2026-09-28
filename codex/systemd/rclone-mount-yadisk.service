@@ -5,10 +5,9 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-Environment=RCLONE_CONFIG=/home/dev/int/tools/.runtime/cloud-access/rclone.conf
-ExecStartPre=/home/dev/int/tools/codex/cloud_access.sh ensure-dirs
-ExecStart=/home/dev/int/tools/codex/cloud_access.sh mount yadisk /home/dev/int/cloud/yadisk
-ExecStop=/home/dev/int/tools/codex/cloud_access.sh umount /home/dev/int/cloud/yadisk
+ExecStartPre=/usr/bin/mkdir -p %h/vfs/intdata/yadisk %h/.cache/rclone-intdata %h/.local/state/intdata-tools/cloud-access/log
+ExecStart=/usr/bin/rclone mount yadisk: %h/vfs/intdata/yadisk --config %h/.config/rclone/rclone.conf --cache-dir %h/.cache/rclone-intdata --vfs-cache-mode writes --vfs-cache-max-size 512M --log-file %h/.local/state/intdata-tools/cloud-access/log/yadisk.log
+ExecStop=/usr/bin/fusermount3 -u %h/vfs/intdata/yadisk
 Restart=on-failure
 RestartPreventExitStatus=3
 RestartSec=5

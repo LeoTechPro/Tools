@@ -20,10 +20,9 @@ PACKAGE_SPEC = "firefox-devtools-mcp@0.9.1"
 
 
 def runtime_root() -> Path:
-    for candidate in (Path("/home/dev/int/tools/.runtime/firefox-mcp"), Path("D:/int/tools/.runtime/firefox-mcp")):
-        if candidate.exists():
-            return candidate.resolve()
-    return Path("D:/int/tools/.runtime/firefox-mcp").resolve() if os.name == "nt" else Path("/home/dev/int/tools/.runtime/firefox-mcp").resolve()
+    if os.name == "nt":
+        return Path("D:/int/tools/.runtime/firefox-mcp").resolve()
+    return (Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / "intdata-tools" / "firefox-mcp").resolve()
 
 
 def normalize_cli_args(argv: list[str]) -> list[str]:

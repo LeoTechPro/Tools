@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RUNTIME_ROOT="${CLOUD_ACCESS_ROOT:-/home/dev/int/tools/.runtime/cloud-access}"
-RCLONE_CONFIG="${RCLONE_CONFIG:-$RUNTIME_ROOT/rclone.conf}"
-CACHE_DIR="${CLOUD_ACCESS_CACHE_DIR:-$RUNTIME_ROOT/cache}"
+RUNTIME_ROOT="${CLOUD_ACCESS_ROOT:-${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/cloud-access}"
+RCLONE_CONFIG="${RCLONE_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/rclone/rclone.conf}"
+CACHE_DIR="${CLOUD_ACCESS_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/rclone-intdata}"
 LOG_DIR="${CLOUD_ACCESS_LOG_DIR:-$RUNTIME_ROOT/log}"
-MOUNT_ROOT="${CLOUD_ACCESS_MOUNT_ROOT:-/home/dev/int/cloud}"
+MOUNT_ROOT="${CLOUD_ACCESS_MOUNT_ROOT:-$HOME/vfs/intdata}"
 VFS_CACHE_MODE="${CLOUD_ACCESS_VFS_CACHE_MODE:-writes}"
 VFS_CACHE_MAX_SIZE="${CLOUD_ACCESS_VFS_CACHE_MAX_SIZE:-512M}"
 BUFFER_SIZE="${CLOUD_ACCESS_BUFFER_SIZE:-4M}"
@@ -27,11 +27,11 @@ EOF
 }
 
 ensure_dirs() {
-  mkdir -p "$CACHE_DIR" "$LOG_DIR" "$MOUNT_ROOT/gdrive" "$MOUNT_ROOT/yadisk"
+  mkdir -p "$(dirname "$RCLONE_CONFIG")" "$CACHE_DIR" "$LOG_DIR" "$MOUNT_ROOT/gdrive" "$MOUNT_ROOT/yadisk"
   if [[ ! -e "$RCLONE_CONFIG" ]]; then
     cat >"$RCLONE_CONFIG" <<'EOF'
 # Managed by /home/dev/int/tools/codex/cloud_access.sh
-# Run `RCLONE_CONFIG=/home/dev/int/tools/.runtime/cloud-access/rclone.conf rclone config`
+# Run `rclone config` using this user's standard config file.
 # to create the `gdrive` and `yadisk` remotes with headless OAuth.
 EOF
   fi

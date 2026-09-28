@@ -4,7 +4,7 @@ Canonical agent workflow: `firefox-devtools-testing` in the `intdata-runtime` pl
 
 ## Назначение
 
-Этот runbook фиксирует canonical browser-proof runtime для `/int/*`: dedicated `firefox-devtools-mcp@0.9.1` с persistent profile и repo-managed launcher-ами из `/int/tools/codex/bin/**`.
+Этот runbook фиксирует browser-proof runtime для `/home/dev/int/*` на Linux и `D:/int/*` на Windows: dedicated `firefox-devtools-mcp@0.9.1` с persistent profile и launcher-ами из `tools/codex/bin/**`.
 
 ## Prerequisites
 
@@ -15,9 +15,10 @@ Canonical agent workflow: `firefox-devtools-testing` in the `intdata-runtime` pl
 
 ## Runtime layout
 
-- profiles: `/int/tools/.runtime/firefox-mcp/profiles/<profile>/`
-- logs: `/int/tools/.runtime/firefox-mcp/logs/<profile>/`
-- run meta: `/int/tools/.runtime/firefox-mcp/run/<profile>.json`
+- Linux profiles: `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/firefox-mcp/profiles/<profile>/`
+- Linux logs: `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/firefox-mcp/logs/<profile>/`
+- Linux run meta: `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/firefox-mcp/run/<profile>.json`
+- Windows: `D:/int/tools/.runtime/firefox-mcp/` с теми же подкаталогами.
 
 ## Wrapper contract
 
@@ -34,20 +35,20 @@ Canonical agent workflow: `firefox-devtools-testing` in the `intdata-runtime` pl
 - generic MCP entry:
   - `D:/int/tools/codex/bin/mcp-firefox-default.cmd`
 - project overlays:
-  - `/int/tools/codex/projects/int/.mcp.json`
-  - `/int/tools/codex/projects/assess/.mcp.json`
+  - `/home/dev/int/tools/codex/projects/int/.mcp.json` на Linux
+  - `/home/dev/int/tools/codex/projects/assess/.mcp.json` на Linux
 
 ## Логи и диагностика
 
-- stderr launcher-а и upstream MCP сервера пишутся в `/int/tools/.runtime/firefox-mcp/logs/<profile>/stderr.log`
-- активный launcher отмечается файлом `/int/tools/.runtime/firefox-mcp/run/<profile>.json`
+- stderr launcher-а и upstream MCP сервера пишутся в Linux state root `firefox-mcp/logs/<profile>/stderr.log`
+- активный launcher отмечается файлом в Linux state root `firefox-mcp/run/<profile>.json`
 - повторный запуск того же profile-key поверх живого launcher-а запрещён
 
 ## Reset одного profile
 
 1. Убедиться, что run-meta для profile отсутствует.
 2. При необходимости закрыть активный MCP session.
-3. Удалить только `/int/tools/.runtime/firefox-mcp/profiles/<profile>/`.
+3. После отдельного точного разрешения удалить только `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/firefox-mcp/profiles/<profile>/` на Linux.
 4. Не трогать соседние role-профили и общие логи.
 
 ## Fallback в owner Chrome

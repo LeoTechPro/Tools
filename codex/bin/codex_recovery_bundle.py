@@ -51,14 +51,18 @@ def default_runtime_root() -> Path:
     explicit = os.environ.get("CODEX_RUNTIME_ROOT", "").strip()
     if explicit:
         return Path(explicit).expanduser().resolve()
-    return (Path(__file__).resolve().parents[2] / ".runtime").resolve()
+    if os.name == "nt":
+        return (Path(__file__).resolve().parents[2] / ".runtime").resolve()
+    return (Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / "intdata-tools").resolve()
 
 
 def default_cloud_root() -> Path:
     explicit = os.environ.get("CLOUD_ACCESS_ROOT", "").strip()
     if explicit:
         return Path(explicit).expanduser().resolve()
-    return (default_runtime_root() / "cloud-access").resolve()
+    if os.name == "nt":
+        return (default_runtime_root() / "cloud-access").resolve()
+    return (Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "rclone").resolve()
 
 
 def ensure_passphrase() -> str:
@@ -106,8 +110,8 @@ def resolve_openssl() -> str:
 
 
 def export_bundle(bundle_path: Path) -> None:
-    runtime_root = default_runtime_root()
-    secrets_root = Path(os.environ.get("CODEX_SECRETS_ROOT", runtime_root / "codex-secrets")).expanduser()
+    default_secrets_root = default_runtime_root() / "codex-secrets" if os.name == "nt" else Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "intdata" / "credentials"
+    secrets_root = Path(os.environ.get("CODEX_SECRETS_ROOT", default_secrets_root)).expanduser()
     cloud_access_root = default_cloud_root()
     openclaw_secrets_root = Path(os.environ.get("OPENCLAW_SECRETS_ROOT", Path.home() / ".openclaw" / "secrets")).expanduser()
 
@@ -126,8 +130,8 @@ def export_bundle(bundle_path: Path) -> None:
                 {
                     "created_at_utc": datetime.now(timezone.utc).isoformat(),
                     "paths": [
-                        "/home/dev/int/tools/.runtime/codex-secrets/",
-                        "/home/dev/int/tools/.runtime/cloud-access/rclone.conf",
+                        str(secrets_root) + "/",
+                        str(cloud_access_root / "rclone.conf"),
                         "~/.openclaw/secrets/",
                     ],
                 },
@@ -162,8 +166,8 @@ def export_bundle(bundle_path: Path) -> None:
 
 
 def import_bundle(bundle_path: Path) -> None:
-    runtime_root = default_runtime_root()
-    secrets_root = Path(os.environ.get("CODEX_SECRETS_ROOT", runtime_root / "codex-secrets")).expanduser()
+    default_secrets_root = default_runtime_root() / "codex-secrets" if os.name == "nt" else Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "intdata" / "credentials"
+    secrets_root = Path(os.environ.get("CODEX_SECRETS_ROOT", default_secrets_root)).expanduser()
     cloud_access_root = default_cloud_root()
     openclaw_secrets_root = Path(os.environ.get("OPENCLAW_SECRETS_ROOT", Path.home() / ".openclaw" / "secrets")).expanduser()
 
@@ -189,7 +193,7 @@ def import_bundle(bundle_path: Path) -> None:
         with tarfile.open(archive_path, "r:gz") as archive:
             archive.extractall(temp_dir)
 
-        secrets_root.mkdir(parents=True, exist_ok=True)
+        secrets_root.mkdir(mode=0o700, parents=True, exist_ok=True)
         openclaw_secrets_root.mkdir(parents=True, exist_ok=True)
         merge_copy(temp_dir / "int/tools/.runtime/codex-secrets", secrets_root)
         cloud_config = temp_dir / "int/tools/.runtime/cloud-access"
