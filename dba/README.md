@@ -10,11 +10,11 @@
 - `dump` / `restore` — выгрузить и залить dump;
 - `clone` — перенести dump из одной БД в другую через локальную машину;
 - `copy` — выгрузить query в CSV и залить в target table;
-- `migrate status` — сравнить `migration_manifest.lock` из `/int/data` с remote `public.schema_migrations`;
-- `migrate data` — применить incremental или bootstrap migration flow `/int/data`.
+- `migrate status` — исторический flow `migration_manifest.lock`/`public.schema_migrations` для явно выбранного legacy data repo;
+- `migrate data` — исторический incremental или bootstrap flow явно выбранного legacy data repo. Действующий Platform использует собственный native runner.
 - `project-migrate punktb-legacy-assess` — перенести legacy PunktB assessment data между профилями через `psql` staging flow.
 - `project-migrate punktb-prod-dev-refresh` — перезалить `assess.specialists`, `assess.clients`, `assess.diag_results` из `punkt_b_prod` в `intdata` dev со strict read-only source и dev-side `auth` bootstrap.
-- `local-test run` — поднять temporary local Supabase runtime под owner-контролем, применить `/int/data` migrations + `init/seed.sql` и опционально прогнать SQL smoke.
+- `local-test run` — поднять temporary local Supabase runtime под owner-контролем для явно выбранного legacy data repo и опционально прогнать SQL smoke.
 - `local-test stop` — остановить temporary local Supabase runtime без backup.
 
 ## Layout
@@ -22,17 +22,17 @@
 - `dba.ps1` / `dba.cmd` — основные launchers;
 - `lib/dba.py` — Python core;
 - `.env.example` — bootstrap-шаблон профилей;
-- `.env` — локальный untracked runtime-файл;
-- `/int/.tmp/tools/dba/` (`D:\int\.tmp\tools\dba\` локально) и `logs/` — runtime-артефакты, не идут в git.
+- Linux: `${XDG_CONFIG_HOME:-~/.config}/intdata/credentials/dba.env` — приватный файл профилей (`0600`), `DBA_ENV_FILE` задаёт явный абсолютный путь вне checkout;
+- Linux: приватные каталоги `0700` в `/tmp/intdata-dba-*` — временные выгрузки и рабочие файлы; `DBA_TMP_ROOT` задаёт явный абсолютный внешний корень без групповой/общей записи либо со sticky bit;
+- Windows сохраняет локальные `dba/.env` и `D:\int\.tmp\tools\dba\` до отдельной миграции.
 
 ## Требования
 
-- Windows PowerShell;
-- `python` или `py` в `PATH`;
+- Windows: PowerShell; Linux: запуск `python3 lib/dba.py`;
+- `python` или `py` в `PATH` на Windows, `python3` на Linux;
 - `psql`, `pg_dump`, `pg_restore` в `PATH` или в стандартном каталоге `C:\Program Files\PostgreSQL\<version>\bin`;
 - сетевой доступ до нужных PostgreSQL endpoint'ов;
-- для `migrate *`: на Windows локальный `D:\int\data` не является default; dev backend work выполняется через `dev@intdata.pro:/int/data`, а disposable/local flow требует явный `--repo` или `DBA_DATA_REPO`;
-- на Linux remote host допускается sibling checkout `/int/data`;
+- для исторического `migrate *` требуется явно выбрать совместимый legacy repo через `--repo` или `DBA_DATA_REPO`; действующий Platform Backend находится в `/home/dev/int/platform` и использует `scripts/supabase-db-apply.sh`;
 - для `migrate data --mode incremental`: `bash` из Git for Windows или иной совместимый `bash`.
 
 ## Профили
@@ -69,11 +69,11 @@ CLI обращается к такому профилю как `intdata-dev`.
 - `pg-dev-admin.py` -> `intdata-dev-admin` (`agents`, breakglass)
 - `pg-test-bootstrap.py` -> retired stop-signal; remote disposable test contour больше не поддерживается
 
-Запуск одинаковый на Windows и Linux:
+На Linux из `/home/dev/int/tools/dba` (на Windows используйте `python` и путь `D:\int\tools\dba`):
 
 ```bash
-python /int/tools/dba/bin/pg-prod-ro.py --doctor
-python /int/tools/dba/bin/pg-dev-migrate.py --path /path/to/change.sql --write --confirm-target intdata
+python3 bin/pg-prod-ro.py --doctor
+python3 bin/pg-dev-migrate.py --path /path/to/change.sql --write --confirm-target intdata
 ```
 
 ### Важно
@@ -81,22 +81,21 @@ python /int/tools/dba/bin/pg-dev-migrate.py --path /path/to/change.sql --write -
 - Supabase system roles (`authenticator`, `anon`, `authenticated`, `service_role`, `supabase_*`) в этой модели считаются immutable.
 - Wrappers должны использовать только custom роли.
 - Raw `psql` с ad-hoc DSN для agent workflow запрещен process-policy.
-- `vds.intdata.pro` больше не используется как disposable test contour для `/int/data`; live remote contour остаётся только `intdata`.
-- Для dev backend intdata не используйте локальный `D:\int\data`; заходите в `dev@intdata.pro:/int/data` и запускайте owner flow там.
+- Исторические инструкции для `/int/data` не являются действующим dev workflow. Для Platform Backend используйте его текущий native runner и отдельные DB gates.
 
 ## Local disposable Supabase runner
 
-Canonical disposable workflow для `/int/data` smoke/bootstrap с нуля:
+Исторический disposable workflow требует явно выбранный совместимый legacy repo; этот пример не подтверждает текущую Platform migration history:
 
 ```bash
-pwsh -File D:\int\tools\dba\dba.ps1 local-test run --confirm-owner-control I_ACKNOWLEDGE_LOCAL_ONLY
+pwsh -File D:\int\tools\dba\dba.ps1 local-test run --repo '<legacy-data-repo>' --confirm-owner-control I_ACKNOWLEDGE_LOCAL_ONLY
 ```
 
 Основные свойства:
 
 - нужен Docker;
 - нужен Supabase CLI (`supabase`) или fallback через `npx supabase`;
-- workspace создаётся в ignored `/int/.tmp/tools/dba/local-supabase/<stamp>`;
+- на Linux workspace создаётся вне checkout в приватном `/tmp/intdata-dba-local-supabase-*`; Windows сохраняет `D:\int\.tmp\tools\dba\`;
 - после `supabase start` tool применяет owner scripts из явно переданного локального repo (`--repo`/`DBA_DATA_REPO`), затем `init/seed.sql`;
 - SQL smoke можно передать через `--smoke-file`;
 - по умолчанию runtime останавливается сам; для ручной диагностики используйте `--keep-running` и затем `local-test stop`.
@@ -157,5 +156,4 @@ Properties:
 - Типовые runtime-ошибки `docker` и `supabase` для local runner тоже переводятся в обычные `intDBA:` сообщения.
 - Секреты профиля передаются внешним PostgreSQL CLI через окружение процесса и не вшиваются в argv.
 - Для `migrate data --mode incremental` `dba` сам добавляет найденный PostgreSQL `bin` в `PATH` дочернего `bash`, если глобальный `PATH` на машине ещё не обновлён.
-- Временные dump/CSV-файлы складываются в `/int/.tmp/tools/dba/`.
-- `.env` не должен попадать в git.
+- На Linux временные dump/CSV-файлы складываются в приватные каталоги `/tmp/intdata-dba-*`, а секреты читаются из защищённого внешнего файла; checkout `.env` не подхватывается.

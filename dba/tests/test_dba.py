@@ -285,7 +285,17 @@ class DBATests(unittest.TestCase):
                     os.environ["DBA_DATA_REPO"] = previous
             self.assertEqual(resolved, repo.resolve())
 
-    def test_resolve_data_repo_reads_local_env_file(self) -> None:
+    def test_linux_credentials_default_external_and_reject_checkout_override(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_root = Path(tmpdir) / "config"
+            with mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": str(config_root)}, clear=False):
+                os.environ.pop("DBA_ENV_FILE", None)
+                self.assertEqual(dba._credential_env_path(), config_root / "intdata" / "credentials" / "dba.env")
+                with mock.patch.dict(os.environ, {"DBA_ENV_FILE": str(dba.TOOL_ROOT / ".env")}):
+                    with self.assertRaises(dba.DBAError):
+                        dba._credential_env_path()
+
+    def test_resolve_data_repo_reads_external_env_file(self) -> None:
         previous_root = dba.TOOL_ROOT
         previous = os.environ.get("DBA_DATA_REPO")
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -294,11 +304,13 @@ class DBATests(unittest.TestCase):
             repo.mkdir()
             tool_root = root / "tools" / "dba"
             tool_root.mkdir(parents=True, exist_ok=True)
-            (tool_root / ".env").write_text(f"DBA_DATA_REPO={repo}\n", encoding="utf-8")
+            env_file = root / "dba.env"
+            env_file.write_text(f"DBA_DATA_REPO={repo}\n", encoding="utf-8")
             dba.TOOL_ROOT = tool_root
             try:
                 os.environ.pop("DBA_DATA_REPO", None)
-                resolved = dba._resolve_data_repo(None)
+                with mock.patch.dict(os.environ, {"DBA_ENV_FILE": str(env_file)}):
+                    resolved = dba._resolve_data_repo(None)
             finally:
                 dba.TOOL_ROOT = previous_root
                 if previous is None:
@@ -323,7 +335,7 @@ class DBATests(unittest.TestCase):
                 else:
                     os.environ["DBA_DATA_REPO"] = previous
 
-    def test_resolve_data_repo_uses_non_windows_sibling_repo(self) -> None:
+    def test_resolve_data_repo_requires_explicit_choice_even_with_sibling_repo(self) -> None:
         previous_root = dba.TOOL_ROOT
         previous = os.environ.get("DBA_DATA_REPO")
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -334,29 +346,42 @@ class DBATests(unittest.TestCase):
             try:
                 os.environ.pop("DBA_DATA_REPO", None)
                 with mock.patch.object(dba.os, "name", "posix"):
-                    resolved = dba._resolve_data_repo(None)
+                    with self.assertRaisesRegex(dba.DBAError, "--repo/DBA_DATA_REPO"):
+                        dba._resolve_data_repo(None)
             finally:
                 dba.TOOL_ROOT = previous_root
                 if previous is None:
                     os.environ.pop("DBA_DATA_REPO", None)
                 else:
                     os.environ["DBA_DATA_REPO"] = previous
-            self.assertEqual(resolved, repo.resolve())
 
-    def test_tool_tmp_dir_uses_master_tmp_root(self) -> None:
+    def test_tool_tmp_dir_uses_external_tmp_root(self) -> None:
         previous_root = dba.TOOL_ROOT
         previous_int_root = dba.INT_ROOT
         with tempfile.TemporaryDirectory() as tmpdir:
-            root = Path(tmpdir)
+            root = Path(tmpdir) / "checkout"
+            tmp_root = Path(tmpdir) / "tmp"
+            tmp_root.mkdir(mode=0o700)
             dba.TOOL_ROOT = root / "tools" / "dba"
             dba.INT_ROOT = root
             try:
-                tmp_path = dba._tool_tmp_dir("dumps")
+                with mock.patch.dict(os.environ, {"DBA_TMP_ROOT": str(tmp_root)}):
+                    old_umask = os.umask(0o002)
+                    try:
+                        tmp_path = dba._tool_tmp_dir("dumps")
+                    finally:
+                        os.umask(old_umask)
             finally:
                 dba.TOOL_ROOT = previous_root
                 dba.INT_ROOT = previous_int_root
-            self.assertEqual(tmp_path.parent.parent, root / ".tmp" / "tools" / "dba")
+            self.assertEqual(tmp_path.parent, tmp_root)
+            self.assertEqual(tmp_path.stat().st_mode & 0o777, 0o700)
             self.assertTrue(tmp_path.exists())
+
+            tmp_root.chmod(0o775)
+            with mock.patch.dict(os.environ, {"DBA_TMP_ROOT": str(tmp_root)}):
+                with self.assertRaises(dba.DBAError):
+                    dba._tool_tmp_dir("dumps")
 
     def test_resolve_data_repo_skips_windows_sibling_repo(self) -> None:
         previous_root = dba.TOOL_ROOT
@@ -368,7 +393,7 @@ class DBATests(unittest.TestCase):
             try:
                 os.environ.pop("DBA_DATA_REPO", None)
                 with mock.patch.object(dba.os, "name", "nt"):
-                    with self.assertRaisesRegex(dba.DBAError, "dev@vds\\.intdata\\.pro:/int/data"):
+                    with self.assertRaisesRegex(dba.DBAError, "явный --repo/DBA_DATA_REPO"):
                         dba._resolve_data_repo(None)
             finally:
                 dba.TOOL_ROOT = previous_root
@@ -588,7 +613,8 @@ class DBATests(unittest.TestCase):
                 with mock.patch.object(dba, "_require_pg_command", return_value=r"C:\Program Files\PostgreSQL\17\bin\psql.exe"):
                     with mock.patch.object(dba, "_run_checked", side_effect=lambda argv, **kwargs: captured.update({"argv": argv, "kwargs": kwargs}) or dba.subprocess.CompletedProcess(argv, 0, "", "")):
                         try:
-                            dba._cmd_migrate_data(args)
+                            with mock.patch.dict(os.environ, {"DBA_ENV_FILE": str(env_path)}):
+                                dba._cmd_migrate_data(args)
                         finally:
                             dba.TOOL_ROOT = previous_root
 
@@ -631,7 +657,8 @@ class DBATests(unittest.TestCase):
             with mock.patch.object(dba, "_require_pg_command", return_value="psql"):
                 with mock.patch.object(dba, "_run_checked", side_effect=lambda argv, **kwargs: calls.append({"argv": argv, "kwargs": kwargs}) or dba.subprocess.CompletedProcess(argv, 0, "", "")):
                     try:
-                        dba._cmd_migrate_data(args)
+                        with mock.patch.dict(os.environ, {"DBA_ENV_FILE": str(env_path)}):
+                            dba._cmd_migrate_data(args)
                     finally:
                         dba.TOOL_ROOT = previous_root
 

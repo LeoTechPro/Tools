@@ -115,8 +115,8 @@ The validator checks that every tracked non-hidden top-level directory is presen
 - `python /home/dev/int/tools/vault/installers/vault_sanitize.py --dry-run --profile strict` — dry-run санитарной миграции vault;
 - `python /home/dev/int/tools/vault/installers/runtime_vault_gc.py --dry-run --brain-root /home/dev/int/brain` — dry-run архивации и очистки canonical runtime-root (`/home/dev/int/.tmp/brain-runtime-vault`);
 - `python /home/dev/int/tools/vault/installers/runtime_vault_gc.py --dry-run --runtime-root /home/dev/int/brain/runtime/vault` — compatibility-режим для legacy runtime-path (с deprecation warning);
-- `python /home/dev/int/tools/dba/lib/dba.py doctor --profile intdata-dev` — проверка native PostgreSQL CLI, TCP и SQL для локально настроенного DB profile;
-- `ssh dev@intdata.pro 'cd /home/dev/int/tools && python /home/dev/int/tools/dba/lib/dba.py migrate status --target intdata-dev'` — сравнение remote `schema_migrations` и `migration_manifest.lock` из `dev@intdata.pro:/home/dev/int/platform`;
+- `python3 /home/dev/int/tools/dba/lib/dba.py doctor --profile intbrain-dev-admin` — проверка native PostgreSQL CLI, TCP и SQL для внешнего DBA-профиля; требует настроенный защищённый файл и подключение к БД;
+- исторический `dba migrate status` использует legacy `migration_manifest.lock` и не заменяет native runner текущего `/home/dev/int/platform`;
 - В owner-facing командах `commit/push/publish/выкатывай/публикуй` агент обязан сначала проверить `git status --short --branch`; при неожиданных или чужих modified/untracked файлах нужно остановиться и спросить владельца. Самостоятельно `stash`/`restore`/`checkout --`/`reset --hard`/`clean`/скрывать/откладывать "чужие" правки из publication-state запрещено.
 - `ssh intdata.pro` — единственный canonical remote shell для IntData deploy/apply/smoke и Codex/Hermes runtime (`dev`);
 - Для dev backend intdata с локальной Windows-машины не используйте `D:\int\data`; рабочий checkout — `dev@intdata.pro:/home/dev/int/platform`.
@@ -360,9 +360,9 @@ bash /home/dev/int/tools/codex/tools/obsidian-desktop/install.sh
 ##### Контракт
 
 - tracked bootstrap живёт рядом с инструментом: `README.md`, `AGENTS.md`, `.env.example`, launchers и tests;
-- локальный `.env` допустим только как untracked runtime-файл рядом с инструментом;
-- временные dump/log/CSV-артефакты живут только в ignored путях `.tmp/` и `logs/`;
-- `DBA_DATA_REPO` может задаваться как через process env, так и через локальный `dba/.env`; типовые runtime-ошибки должны выходить как обычные `intDBA:` сообщения без traceback;
+- на Linux профили читаются из `${XDG_CONFIG_HOME:-~/.config}/intdata/credentials/dba.env` или явного абсолютного внешнего `DBA_ENV_FILE`; Windows сохраняет прежний `dba/.env` до отдельной миграции;
+- на Linux временные dump/CSV-артефакты живут в приватных каталогах `/tmp/intdata-dba-*` или под явно заданным безопасным `DBA_TMP_ROOT`; Windows сохраняет `D:\int\.tmp\tools\dba\`;
+- `DBA_DATA_REPO` может задаваться через process env или выбранный файл профилей; типовые runtime-ошибки должны выходить как обычные `intDBA:` сообщения без traceback;
 - на Windows `dba` не должен автоматически подхватывать `D:\int\data`; для dev backend работы используется `dev@intdata.pro:/home/dev/int/platform`, а локальный disposable flow требует явный `--repo`/`DBA_DATA_REPO`;
 - native migration-path тоже должен быть самодостаточным: `bootstrap` использует тот же profile-password, а `incremental` при необходимости сам прокидывает найденный PostgreSQL `bin` в `PATH` дочернего `bash`;
 - backend source is `/home/dev/int/platform`; verify its current migration entrypoint before using the historical `init/010_supabase_migrate.sh` example.

@@ -11,8 +11,10 @@ from pathlib import Path
 import re
 import shutil
 import socket
+import stat
 import subprocess
 import sys
+import tempfile
 from typing import Sequence
 from urllib.parse import urlsplit, urlunsplit
 
@@ -20,7 +22,6 @@ from urllib.parse import urlsplit, urlunsplit
 TOOL_ROOT = Path(__file__).resolve().parents[1]
 INT_ROOT = TOOL_ROOT.parent.parent
 DEFAULT_DATA_REPO_ENV = "DBA_DATA_REPO"
-REMOTE_DATA_REPO_HINT = "dev@intdata.pro:/int/data"
 PROFILE_PATTERN = re.compile(r"^DBA_PROFILE__([A-Z0-9_]+)__([A-Z0-9_]+)$")
 SAFE_TABLE_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$")
 WINDOWS_PG_ROOT = Path(r"C:\Program Files\PostgreSQL")
@@ -117,6 +118,20 @@ def _load_env_file(env_path: Path) -> dict[str, str]:
     return _parse_env_text(env_path.read_text(encoding="utf-8"))
 
 
+def _external_linux_path(env_name: str, default: Path) -> Path:
+    path = Path(os.environ.get(env_name, str(default))).expanduser()
+    if not path.is_absolute() or path.resolve().is_relative_to(INT_ROOT.resolve()):
+        raise DBAError(f"{env_name} должен указывать на абсолютный путь вне checkout.")
+    return path
+
+
+def _credential_env_path() -> Path:
+    if os.name == "nt":
+        return TOOL_ROOT / ".env"
+    config_root = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    return _external_linux_path("DBA_ENV_FILE", config_root / "intdata" / "credentials" / "dba.env")
+
+
 def _load_tool_env(env_path: Path) -> dict[str, str]:
     merged = _load_env_file(env_path)
     merged.update(os.environ)
@@ -179,32 +194,33 @@ def _resolve_data_repo(requested_repo: str | None) -> Path:
     if requested_repo:
         return _ensure_repo(Path(requested_repo))
 
-    env_path = TOOL_ROOT / ".env"
+    env_path = _credential_env_path()
     env_repo = _load_tool_env(env_path).get(DEFAULT_DATA_REPO_ENV, "").strip()
     if env_repo:
         return _ensure_repo(Path(env_repo))
 
-    sibling_repo = TOOL_ROOT.parent.parent / "data"
     if os.name == "nt":
         raise DBAError(
-            "Не удалось автоматически найти repo `/int/data`: локальный Windows checkout `D:\\int\\data` "
-            f"не является dev backend default. Для работы с dev backend intdata используйте remote checkout "
-            f"`{REMOTE_DATA_REPO_HINT}`, например через `ssh dev@intdata.pro` и `cd /int/data`, "
-            "либо передайте явный локальный --repo/DBA_DATA_REPO для осознанного disposable flow."
+            "Исторический data migration flow требует явный --repo/DBA_DATA_REPO; "
+            "локальный Windows checkout не является dev backend default. "
+            "Для действующего Platform используйте его собственный native runner."
         )
-    if sibling_repo.exists():
-        return sibling_repo.resolve()
-
     raise DBAError(
-        "Не удалось автоматически найти repo `/int/data`; укажите --repo, задайте DBA_DATA_REPO "
-        f"или выполните dev backend workflow на `{REMOTE_DATA_REPO_HINT}`."
+        "Исторический data migration flow требует явный --repo/DBA_DATA_REPO; "
+        "для действующего Platform используйте его собственный native runner."
     )
 
 
 def _tool_tmp_dir(purpose: str) -> Path:
-    path = INT_ROOT / ".tmp" / "tools" / "dba" / purpose / _utc_stamp()
-    path.mkdir(parents=True, exist_ok=True)
-    return path
+    if os.name == "nt":
+        path = INT_ROOT / ".tmp" / "tools" / "dba" / purpose / _utc_stamp()
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+    tmp_root = _external_linux_path("DBA_TMP_ROOT", Path("/tmp"))
+    mode = tmp_root.stat().st_mode
+    if not stat.S_ISDIR(mode) or ((mode & 0o022) and not (mode & stat.S_ISVTX)):
+        raise DBAError("DBA_TMP_ROOT должен быть каталогом без групповой/общей записи либо со sticky bit.")
+    return Path(tempfile.mkdtemp(prefix=f"intdata-dba-{purpose}-", dir=tmp_root))
 
 
 def _process_env(profile: Profile, *, read_only: bool = False, extra: dict[str, str] | None = None) -> dict[str, str]:
@@ -963,7 +979,7 @@ def _write_punktb_prod_dev_refresh_source_export_sql(workdir: Path) -> Path:
 
 
 def _cmd_doctor(args: argparse.Namespace) -> int:
-    env_path = TOOL_ROOT / ".env"
+    env_path = _credential_env_path()
     profile = _get_profile(env_path, args.profile)
     tools = _require_pg_tools()
     _test_tcp(profile)
@@ -989,7 +1005,7 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
 
 
 def _cmd_sql(args: argparse.Namespace) -> int:
-    env_path = TOOL_ROOT / ".env"
+    env_path = _credential_env_path()
     profile = _get_profile(env_path, args.profile)
     if args.write:
         _ensure_write_allowed(profile, args.approve_target, args.force_prod_write)
@@ -1002,7 +1018,7 @@ def _cmd_sql(args: argparse.Namespace) -> int:
 
 
 def _cmd_file(args: argparse.Namespace) -> int:
-    env_path = TOOL_ROOT / ".env"
+    env_path = _credential_env_path()
     profile = _get_profile(env_path, args.profile)
     if args.write:
         _ensure_write_allowed(profile, args.approve_target, args.force_prod_write)
@@ -1044,7 +1060,7 @@ def _run_dump(
 
 
 def _cmd_dump(args: argparse.Namespace) -> int:
-    env_path = TOOL_ROOT / ".env"
+    env_path = _credential_env_path()
     profile = _get_profile(env_path, args.source)
     output_path = Path(args.output).resolve() if args.output else _default_dump_output(profile, args.format)
     final_path = _run_dump(
@@ -1094,7 +1110,7 @@ def _run_restore(
 
 
 def _cmd_restore(args: argparse.Namespace) -> int:
-    env_path = TOOL_ROOT / ".env"
+    env_path = _credential_env_path()
     profile = _get_profile(env_path, args.target)
     _ensure_write_allowed(profile, args.approve_target, args.force_prod_write)
     input_path = Path(args.input).resolve()
@@ -1111,7 +1127,7 @@ def _cmd_restore(args: argparse.Namespace) -> int:
 
 
 def _cmd_clone(args: argparse.Namespace) -> int:
-    env_path = TOOL_ROOT / ".env"
+    env_path = _credential_env_path()
     source_profile = _get_profile(env_path, args.source)
     target_profile = _get_profile(env_path, args.target)
     _ensure_write_allowed(target_profile, args.approve_target, args.force_prod_write)
@@ -1141,7 +1157,7 @@ def _cmd_copy(args: argparse.Namespace) -> int:
     if not SAFE_TABLE_PATTERN.match(args.target_table):
         raise DBAError("target-table должен быть в формате schema.table или table без произвольного SQL.")
 
-    env_path = TOOL_ROOT / ".env"
+    env_path = _credential_env_path()
     source_profile = _get_profile(env_path, args.source)
     target_profile = _get_profile(env_path, args.target)
     _ensure_write_allowed(target_profile, args.approve_target, args.force_prod_write)
@@ -1624,7 +1640,7 @@ def _punktb_legacy_source_limit_clause(limit: int | None) -> str:
 
 
 def _cmd_project_migrate_punktb_legacy_assess(args: argparse.Namespace) -> int:
-    env_path = TOOL_ROOT / ".env"
+    env_path = _credential_env_path()
     source_profile = _get_profile(env_path, args.source)
     target_profile = _get_profile(env_path, args.target)
     if args.apply:
@@ -1695,7 +1711,7 @@ def _cmd_project_migrate_punktb_legacy_assess(args: argparse.Namespace) -> int:
 
 
 def _cmd_project_migrate_punktb_prod_dev_refresh(args: argparse.Namespace) -> int:
-    env_path = TOOL_ROOT / ".env"
+    env_path = _credential_env_path()
     source_profile = _get_profile(env_path, args.source)
     target_profile = _get_profile(env_path, args.target)
     _validate_punktb_prod_dev_refresh_profiles(source_profile, target_profile)
@@ -1760,7 +1776,7 @@ def _cmd_project_migrate_punktb_prod_dev_refresh(args: argparse.Namespace) -> in
 
 
 def _cmd_migrate_status(args: argparse.Namespace) -> int:
-    env_path = TOOL_ROOT / ".env"
+    env_path = _credential_env_path()
     profile = _get_profile(env_path, args.target)
     repo_root = _resolve_data_repo(args.repo)
     manifest_versions = _read_manifest_versions(repo_root)
@@ -1777,7 +1793,7 @@ def _cmd_migrate_status(args: argparse.Namespace) -> int:
 
 
 def _cmd_migrate_data(args: argparse.Namespace) -> int:
-    env_path = TOOL_ROOT / ".env"
+    env_path = _credential_env_path()
     profile = _get_profile(env_path, args.target)
     _ensure_write_allowed(profile, args.approve_target, args.force_prod_write)
     repo_root = _resolve_data_repo(args.repo)
@@ -2077,7 +2093,7 @@ def _build_parser() -> argparse.ArgumentParser:
     copy_cmd.add_argument("--force-prod-write", action="store_true")
     copy_cmd.set_defaults(handler=_cmd_copy)
 
-    migrate = subparsers.add_parser("migrate", help="Операции с migration flow `/int/data`.")
+    migrate = subparsers.add_parser("migrate", help="Операции с историческим data migration flow.")
     migrate_subparsers = migrate.add_subparsers(dest="migrate_command", required=True)
 
     migrate_status = migrate_subparsers.add_parser("status", help="Сравнить manifest и remote schema_migrations.")
@@ -2085,7 +2101,7 @@ def _build_parser() -> argparse.ArgumentParser:
     migrate_status.add_argument("--repo")
     migrate_status.set_defaults(handler=_cmd_migrate_status)
 
-    migrate_data = migrate_subparsers.add_parser("data", help="Применить migration flow `/int/data` на target-профиль.")
+    migrate_data = migrate_subparsers.add_parser("data", help="Применить исторический data migration flow на target-профиль.")
     migrate_data.add_argument("--target", required=True)
     migrate_data.add_argument("--repo")
     migrate_data.add_argument("--mode", choices=("incremental", "bootstrap"), default="incremental")
@@ -2096,7 +2112,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     local_test = subparsers.add_parser(
         "local-test",
-        help="Owner-gated local disposable Supabase workflow for `/int/data` bootstrap and smoke.",
+        help="Owner-gated local disposable workflow for historical data bootstrap and smoke.",
     )
     local_test_subparsers = local_test.add_subparsers(dest="local_test_command", required=True)
 
