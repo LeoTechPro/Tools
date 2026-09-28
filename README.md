@@ -116,10 +116,10 @@ The validator checks that every tracked non-hidden top-level directory is presen
 - `python /home/dev/int/tools/vault/installers/runtime_vault_gc.py --dry-run --brain-root /home/dev/int/brain` — dry-run архивации и очистки canonical runtime-root (`/home/dev/int/.tmp/brain-runtime-vault`);
 - `python /home/dev/int/tools/vault/installers/runtime_vault_gc.py --dry-run --runtime-root /home/dev/int/brain/runtime/vault` — compatibility-режим для legacy runtime-path (с deprecation warning);
 - `python /home/dev/int/tools/dba/lib/dba.py doctor --profile intdata-dev` — проверка native PostgreSQL CLI, TCP и SQL для локально настроенного DB profile;
-- `ssh dev@intdata.pro 'cd /home/dev/int/tools && python /home/dev/int/tools/dba/lib/dba.py migrate status --target intdata-dev'` — сравнение remote `schema_migrations` и `migration_manifest.lock` из `dev@intdata.pro:/home/dev/int/core/backend`;
+- `ssh dev@intdata.pro 'cd /home/dev/int/tools && python /home/dev/int/tools/dba/lib/dba.py migrate status --target intdata-dev'` — сравнение remote `schema_migrations` и `migration_manifest.lock` из `dev@intdata.pro:/home/dev/int/platform`;
 - В owner-facing командах `commit/push/publish/выкатывай/публикуй` агент обязан сначала проверить `git status --short --branch`; при неожиданных или чужих modified/untracked файлах нужно остановиться и спросить владельца. Самостоятельно `stash`/`restore`/`checkout --`/`reset --hard`/`clean`/скрывать/откладывать "чужие" правки из publication-state запрещено.
 - `ssh intdata.pro` — единственный canonical remote shell для IntData deploy/apply/smoke и Codex/Hermes runtime (`dev`);
-- Для dev backend intdata с локальной Windows-машины не используйте `D:\int\data`; рабочий checkout — `dev@intdata.pro:/home/dev/int/core/backend`.
+- Для dev backend intdata с локальной Windows-машины не используйте `D:\int\data`; рабочий checkout — `dev@intdata.pro:/home/dev/int/platform`.
 - `python -m agent_plane.server --host 127.0.0.1 --port 9192` — локальный запуск neutral Agent Tool Plane;
 - `python -m agent_plane.local_harness --help` — local smoke через neutral plane;
 - `/home/dev/int/tools/codex/bin/codex-host-bootstrap` — bootstrap рабочего минимума Codex/OpenClaw/cloud tooling;
@@ -371,9 +371,9 @@ bash /home/dev/int/tools/codex/tools/obsidian-desktop/install.sh
 - локальный `.env` допустим только как untracked runtime-файл рядом с инструментом;
 - временные dump/log/CSV-артефакты живут только в ignored путях `.tmp/` и `logs/`;
 - `DBA_DATA_REPO` может задаваться как через process env, так и через локальный `dba/.env`; типовые runtime-ошибки должны выходить как обычные `intDBA:` сообщения без traceback;
-- на Windows `dba` не должен автоматически подхватывать `D:\int\data`; для dev backend работы используется `dev@intdata.pro:/home/dev/int/core/backend`, а локальный disposable flow требует явный `--repo`/`DBA_DATA_REPO`;
+- на Windows `dba` не должен автоматически подхватывать `D:\int\data`; для dev backend работы используется `dev@intdata.pro:/home/dev/int/platform`, а локальный disposable flow требует явный `--repo`/`DBA_DATA_REPO`;
 - native migration-path тоже должен быть самодостаточным: `bootstrap` использует тот же profile-password, а `incremental` при необходимости сам прокидывает найденный PostgreSQL `bin` в `PATH` дочернего `bash`;
-- backend source is `/home/dev/int/core/backend`; verify its current migration entrypoint before using the historical `init/010_supabase_migrate.sh` example.
+- backend source is `/home/dev/int/platform`; verify its current migration entrypoint before using the historical `init/010_supabase_migrate.sh` example.
 
 ##### Основные команды
 
@@ -414,7 +414,7 @@ bash /home/dev/int/tools/codex/tools/obsidian-desktop/install.sh
 - `docops/` — docs/process helpers;
 - `monitoring/` — monitoring templates.
 
-`/home/dev/int/core/backend` остаётся owner только backend-core. Всё, что является внешним tooling, host-config или rollout слоем, должно жить в `delivery/`.
+`/home/dev/int/platform` остаётся owner только backend-core. Всё, что является внешним tooling, host-config или rollout слоем, должно жить в `delivery/`.
 
 ### `delivery/configs/`
 
@@ -432,7 +432,7 @@ bash /home/dev/int/tools/codex/tools/obsidian-desktop/install.sh
 - canonical backend migrations/contracts/functions
 - runtime-state и живые секреты
 
-Если конфиг обслуживает хост, reverse proxy, systemd или внешний rollout path, его место здесь, а не в `/home/dev/int/core/backend`.
+Если конфиг обслуживает хост, reverse proxy, systemd или внешний rollout path, его место здесь, а не в `/home/dev/int/platform`.
 
 ### `delivery/configs/nginx/`
 
