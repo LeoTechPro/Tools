@@ -1,12 +1,12 @@
 # intData-tools
 
-`/int/tools` is the public `intData-tools` marketplace/catalog of first-party
+`/home/dev/int/tools` is the Linux checkout of the public `intData-tools` marketplace/catalog of first-party
 open-source tools and MCP servers from intData, plus recommended external tools.
 
 This repository is not a machine-wide ops/runtime warehouse. Public source here
 must be reusable, installable or reviewable as a tool, adapter, sanitized
 template, or catalog entry. External recommendations are catalog links by
-default: `/int/tools` stores the card and upstream URL, not a vendored source
+default: `tools/` stores the card and upstream URL, not a vendored source
 copy.
 
 ## Public Catalog Model
@@ -22,7 +22,7 @@ Allowed statuses:
 - `runtime-state` - machine-local state that must not be tracked.
 - `legacy-remove` - compatibility/reference material scheduled for removal after recorded destination and dry-run approval.
 
-`/int/tools` remains the compatibility source path for now. Hardcoded absolute-path contracts are technical debt and should be removed per tool as packaging matures.
+The Linux master is `/home/dev/int`; on the owner PC it remains `D:\\int`. Installed services use their own paths under `/usr/local/lib`, `/etc`, `/var/lib` and `/srv`. Hardcoded checkout paths in older tools are migration debt.
 
 Human-readable third-party recommendations live in `EXTERNAL_TOOLS.md`; the
 machine-readable registry remains `tools.catalog.v1.json`.
@@ -72,8 +72,8 @@ The validator checks that every tracked non-hidden top-level directory is presen
 
 ## OpenSpec governance
 
-В managed workspace `/int` процесс определяется workspace `AGENTS.md` и
-`/int/openspec/specs/process/spec.md`. Требования Tools хранятся в локальном
+В managed workspace `/home/dev/int` процесс определяется workspace `AGENTS.md` и
+`/home/dev/int/openspec/specs/process/spec.md`. Требования Tools хранятся в локальном
 `openspec/`; общие межрепозиторные требования принадлежат root.
 Для OpenSpec используйте native CLI `openspec` и его штатные `openspec-*` skills.
 Уровень спецификации выбирается по характеру изменения; исправления документации
@@ -89,7 +89,7 @@ The validator checks that every tracked non-hidden top-level directory is presen
 - Codex v2rayA recovery source lives in `codex/bin/v2raya-codex-health.sh` and `codex/bin/v2raya-core-hook-remove-quic.sh`; canonical runbook: `codex/docs/runbooks/v2raya-codex-recovery.md`;
 - tracked Firefox MCP overlays для конкретных контуров живут только в `codex/projects/*/.mcp.json`;
 - machine-readable routing registry для repo-owned high-risk capabilities живёт в `codex/config/agent-tool-routing.v1.json`, а resolver/validator CLI — в `codex/bin/agent_tool_routing.py`;
-- canonical runtime layout dedicated Firefox MCP: `/int/tools/.runtime/firefox-mcp/profiles/<profile>/`, `/int/tools/.runtime/firefox-mcp/logs/<profile>/`, `/int/tools/.runtime/firefox-mcp/run/<profile>.json`;
+- canonical runtime layout dedicated Firefox MCP: `/home/dev/int/tools/.runtime/firefox-mcp/profiles/<profile>/`, `/home/dev/int/tools/.runtime/firefox-mcp/logs/<profile>/`, `/home/dev/int/tools/.runtime/firefox-mcp/run/<profile>.json`;
 - `codex/tools/mcp-obsidian-memory/` содержит локальный MCP-сервер для vault `/2brain`;
 - `codex/tools/obsidian-desktop/` хранит repo-managed launcher и desktop config для Obsidian;
 - `codex/assets/codex-home/skills/javascript/` хранит repo-managed resources, scripts и templates для JavaScript skill assets;
@@ -98,7 +98,7 @@ The validator checks that every tracked non-hidden top-level directory is presen
 
 ### Firefox browser testing
 
-- Canonical local browser-proof workflow: `intbridge:firefox-devtools-testing`; tracked source `/int/bridge/plugins/intbridge/skills/firefox-devtools-testing/SKILL.md`.
+- The old `intbridge:firefox-devtools-testing` source reference is historical; its former checkout path is absent on this host. Use the configured `firefox-devtools` MCP below.
 - Use configured `firefox-devtools` MCP for local persistent/authenticated Firefox sessions, screenshots, console/network checks, privileged scripts, prefs, and extension diagnostics.
 - Legacy dedicated Firefox MCP wrappers and profile overlays remain source-controlled compatibility/remote fallback tooling; do not introduce new raw `npx` browser-proof wrappers.
 - Remote, VDS, CI, headless, and reproducible E2E checks may continue to use Playwright or existing remote browser tools.
@@ -112,43 +112,43 @@ The validator checks that every tracked non-hidden top-level directory is presen
 ## Полезные команды
 
 - `intnode coord --help` — справка по Git-aware coordination sessions, intents, cleanup и merge dry-run;
-- `python /int/tools/vault/installers/vault_sanitize.py --dry-run --profile strict` — dry-run санитарной миграции vault;
-- `python /int/tools/vault/installers/runtime_vault_gc.py --dry-run --brain-root /int/brain` — dry-run архивации и очистки canonical runtime-root (`/int/.tmp/brain-runtime-vault`);
-- `python /int/tools/vault/installers/runtime_vault_gc.py --dry-run --runtime-root /int/brain/runtime/vault` — compatibility-режим для legacy runtime-path (с deprecation warning);
-- `python /int/tools/dba/lib/dba.py doctor --profile intdata-dev` — проверка native PostgreSQL CLI, TCP и SQL для локально настроенного DB profile;
-- `ssh dev@intdata.pro 'cd /int/tools && python /int/tools/dba/lib/dba.py migrate status --target intdata-dev'` — сравнение remote `schema_migrations` и `migration_manifest.lock` из `dev@intdata.pro:/int/data`;
+- `python /home/dev/int/tools/vault/installers/vault_sanitize.py --dry-run --profile strict` — dry-run санитарной миграции vault;
+- `python /home/dev/int/tools/vault/installers/runtime_vault_gc.py --dry-run --brain-root /home/dev/int/brain` — dry-run архивации и очистки canonical runtime-root (`/home/dev/int/.tmp/brain-runtime-vault`);
+- `python /home/dev/int/tools/vault/installers/runtime_vault_gc.py --dry-run --runtime-root /home/dev/int/brain/runtime/vault` — compatibility-режим для legacy runtime-path (с deprecation warning);
+- `python /home/dev/int/tools/dba/lib/dba.py doctor --profile intdata-dev` — проверка native PostgreSQL CLI, TCP и SQL для локально настроенного DB profile;
+- `ssh dev@intdata.pro 'cd /home/dev/int/tools && python /home/dev/int/tools/dba/lib/dba.py migrate status --target intdata-dev'` — сравнение remote `schema_migrations` и `migration_manifest.lock` из `dev@intdata.pro:/home/dev/int/core/backend`;
 - В owner-facing командах `commit/push/publish/выкатывай/публикуй` агент обязан сначала проверить `git status --short --branch`; при неожиданных или чужих modified/untracked файлах нужно остановиться и спросить владельца. Самостоятельно `stash`/`restore`/`checkout --`/`reset --hard`/`clean`/скрывать/откладывать "чужие" правки из publication-state запрещено.
 - `ssh intdata.pro` — единственный canonical remote shell для IntData deploy/apply/smoke и Codex/Hermes runtime (`dev`);
-- Для dev backend intdata с локальной Windows-машины не используйте `D:\int\data`; рабочий checkout — `dev@intdata.pro:/int/data`.
+- Для dev backend intdata с локальной Windows-машины не используйте `D:\int\data`; рабочий checkout — `dev@intdata.pro:/home/dev/int/core/backend`.
 - `python -m agent_plane.server --host 127.0.0.1 --port 9192` — локальный запуск neutral Agent Tool Plane;
 - `python -m agent_plane.local_harness --help` — local smoke через neutral plane;
-- `/int/tools/codex/bin/codex-host-bootstrap` — bootstrap рабочего минимума Codex/OpenClaw/cloud tooling;
-- `pwsh -File /int/tools/codex/scripts/bootstrap_windows_toolchain.ps1 -AllowUserFallback` — idempotent bootstrap Windows CLI-toolchain (`rg`, `fd`, `yq`, `uv`, `pnpm`, `terraform`, `make`, PATH-normalization, fallback для `cmake/7z`);
-- `pwsh -File /int/tools/codex/scripts/codex_preflight.ps1` — preflight-проверка ключевых CLI с machine-readable режимом `-Json`;
+- `/home/dev/int/tools/codex/bin/codex-host-bootstrap` — bootstrap рабочего минимума Codex/OpenClaw/cloud tooling;
+- `pwsh -File /home/dev/int/tools/codex/scripts/bootstrap_windows_toolchain.ps1 -AllowUserFallback` — idempotent bootstrap Windows CLI-toolchain (`rg`, `fd`, `yq`, `uv`, `pnpm`, `terraform`, `make`, PATH-normalization, fallback для `cmake/7z`);
+- `pwsh -File /home/dev/int/tools/codex/scripts/codex_preflight.ps1` — preflight-проверка ключевых CLI с machine-readable режимом `-Json`;
 - `openspec --version` — канонический CLI OpenSpec (@fission-ai/openspec);
-- `python /int/tools/codex/bin/agent_tool_routing.py validate --strict --json` — validate registry и blocker-rules для V1 high-risk tooling;
-- `bash /int/tools/codex/bin/register-intdata-mcp.sh` или `pwsh -File D:\int\tools\codex\bin\register-intdata-mcp.ps1` — read-only проверка двух host-native регистраций `intdata-control` и `intdata-runtime`;
+- `python /home/dev/int/tools/codex/bin/agent_tool_routing.py validate --strict --json` — validate registry и blocker-rules для V1 high-risk tooling;
+- `bash /home/dev/int/tools/codex/bin/register-intdata-mcp.sh` или `pwsh -File D:\int\tools\codex\bin\register-intdata-mcp.ps1` — read-only проверка двух host-native регистраций `intdata-control` и `intdata-runtime`;
 - те же команды с `--apply` создают отсутствующие регистрации через `codex mcp add`; замена drift требует `--replace`, а восстановление выполняется как `--rollback <backup.json> --apply`;
 - `python -m unittest discover -s agent_plane/tests -p test_*.py -v` — unit/integration smoke neutral Agent Tool Plane;
-- `pwsh -File /int/tools/codex/bin/mcp-firefox-devtools.ps1 -ProfileKey firefox-default -StartUrl http://127.0.0.1:8080/ -DryRun` — dry-run канонического Firefox DevTools MCP launcher-а;
-- `bash /int/tools/openclaw/ops/verify.sh` — проверка overlay OpenClaw;
+- `pwsh -File /home/dev/int/tools/codex/bin/mcp-firefox-devtools.ps1 -ProfileKey firefox-default -StartUrl http://127.0.0.1:8080/ -DryRun` — dry-run канонического Firefox DevTools MCP launcher-а;
+- `bash /home/dev/int/tools/openclaw/ops/verify.sh` — проверка overlay OpenClaw;
 - `AUTH_TYPE=oauth-personal HOST=127.0.0.1 PORT=11434 npm start` из `gemini-openai-proxy/` — локальный запуск proxy.
 
 ## Tailscale Private Admin Channel (v1)
 
 - Tailscale используется как приватный ops/admin канал между `local PC`, `intdata.pro` и `vds.punkt-b.pro`, а не как замена публичного ingress.
-- Канонический runbook: `/int/tools/codex/docs/runbooks/tailscale-tailnet-v1.md`.
+- Канонический runbook: `/home/dev/int/tools/codex/docs/runbooks/tailscale-tailnet-v1.md`.
 - Для `intdata.pro` допустим только `dev`; учётная запись `agents` относится только к `vds.punkt-b.pro`.
 - Для `prod` действует stricter policy: default-path только read-first и отдельный restricted SSH user; full root workflow не открывается автоматически.
 
 ### Tailnet-First SSH Transport (repo-managed)
 
 - Канонический SSH transport-слой находится в:
-  - `/int/tools/codex/bin/int_ssh_resolve.py`
-  - `/int/tools/codex/bin/int_ssh_resolve.ps1`
-  - `/int/tools/codex/bin/int_ssh_resolve.sh`
-  - `/int/tools/codex/bin/int_ssh_host.sh` (compatibility destination-only adapter; not a separate capability)
-  - `/int/tools/codex/config/int_ssh_config`
+  - `/home/dev/int/tools/codex/bin/int_ssh_resolve.py`
+  - `/home/dev/int/tools/codex/bin/int_ssh_resolve.ps1`
+  - `/home/dev/int/tools/codex/bin/int_ssh_resolve.sh`
+  - `/home/dev/int/tools/codex/bin/int_ssh_host.sh` (compatibility destination-only adapter; not a separate capability)
+  - `/home/dev/int/tools/codex/config/int_ssh_config`
 - User-home `~/.ssh/config`/`C:\Users\intData\.ssh\config` этим rollout-ом не редактируется.
 - Контракт режима:
   - `INT_SSH_MODE=auto|tailnet|public` (default `auto`)
@@ -185,7 +185,7 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 ## Git Branch Policy
 
 - для каждого checkout/worktree локально включаем `git config core.hooksPath .githooks`, чтобы активировать tracked guardrail из `.githooks/pre-push`;
-- для multi-machine работы в `/int/*` используются explicit native git commands и repo hooks; локальный `int_git_sync_gate` удалён/запрещён;
+- для multi-machine работы в `/home/dev/int/*` используются explicit native git commands и repo hooks; локальный `int_git_sync_gate` удалён/запрещён;
 - tracked `.githooks/pre-push` проверяет env-policy и owner approval для push в `main`; non-main push этим guardrail не блокируется;
 - любой push в удалённый `main` требует явный `ALLOW_MAIN_PUSH=1` и допускается только из локальной `main`;
 - push в `dev` и другие non-main branches этим repo-local guardrail не ограничивается.
@@ -199,38 +199,38 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 #### Codex Scripts
 
 `codex/` хранит versioned host-tooling для Codex CLI и смежного MCP-окружения.
-Канонические wrapper'ы и install/runbook-обвязка живут здесь; live runtime OpenClaw вынесен в `~/.openclaw`, а versioned overlay лежит в `/int/tools/openclaw`. Codex home остаётся Codex-owned state и не синхронизируется из repo scripts.
+Канонические wrapper'ы и install/runbook-обвязка живут здесь; live runtime OpenClaw вынесен в `~/.openclaw`, а versioned overlay лежит в `/home/dev/int/tools/openclaw`. Codex home остаётся Codex-owned state и не синхронизируется из repo scripts.
 
 ##### Контракт
 
-- Канонические Codex-facing wrapper'ы и install/ops-обвязка живут в `/int/tools/codex`.
+- Канонические Codex-facing wrapper'ы и install/ops-обвязка живут в `/home/dev/int/tools/codex`.
 - Legacy managed assets для старого Codex home overlay могут оставаться только как historical/read-only reference; они не являются active sync source.
 - Project overlays для старого `~/.codex/projects/*` не синхронизируются repo scripts; используйте native Codex plugin/skill/config mechanisms.
-- Runtime/log/tmp/state repo-owned tooling живут вне git, в `/int/tools/.runtime/**`.
-- Секретные env-файлы MCP живут не в `~/.codex/var`, а в `/int/tools/.runtime/codex-secrets/`; active helpers не используют legacy Codex-home fallback.
+- Runtime/log/tmp/state repo-owned tooling живут вне git, в `/home/dev/int/tools/.runtime/**`.
+- Секретные env-файлы MCP живут не в `~/.codex/var`, а в `/home/dev/int/tools/.runtime/codex-secrets/`; active helpers не используют legacy Codex-home fallback.
 - Любые cron/systemd записи должны ссылаться на файлы из этого каталога, а не на продуктовые репозитории.
-- Канонический cron entrypoint для orphan cleaner: `/int/tools/codex/cleanup_agent_orphans.sh`; lock/log writes go to `/int/tools/.runtime/codex/**`.
+- Канонический cron entrypoint для orphan cleaner: `/home/dev/int/tools/codex/cleanup_agent_orphans.sh`; lock/log writes go to `/home/dev/int/tools/.runtime/codex/**`.
 - `~/.codex/scripts/cleanup-agent-orphans.sh` допустим только как legacy compatibility wrapper для старых вызовов, без source-of-truth логики.
 - Codex-home sync/detach scripts were removed: Codex home changes require native Codex mechanisms or explicit manual owner action.
-- Для clean-room восстановления используйте `/int/tools/codex/bin/codex-host-bootstrap`, `/int/tools/codex/bin/codex-host-verify` и `/int/tools/codex/bin/codex-recovery-bundle`.
+- Для clean-room восстановления используйте `/home/dev/int/tools/codex/bin/codex-host-bootstrap`, `/home/dev/int/tools/codex/bin/codex-host-verify` и `/home/dev/int/tools/codex/bin/codex-recovery-bundle`.
 
 ##### Канонические runtime-path
 
-- логи repo-owned tooling: `/int/tools/.runtime/codex/log/`
-- временные файлы repo-owned tooling: `/int/tools/.runtime/codex/tmp/`
+- логи repo-owned tooling: `/home/dev/int/tools/.runtime/codex/log/`
+- временные файлы repo-owned tooling: `/home/dev/int/tools/.runtime/codex/tmp/`
 - OpenClaw runtime: `~/.openclaw/`
-- OpenClaw overlay/runbooks: `/int/tools/openclaw/`
+- OpenClaw overlay/runbooks: `/home/dev/int/tools/openclaw/`
 - прочий Codex runtime/state: Codex-owned `~/.codex/`, изменяется только native Codex mechanisms или explicit manual owner action
-- Codex MCP secrets runtime: `/int/tools/.runtime/codex-secrets/`
-- Cloud runtime: `/int/tools/.runtime/cloud-access/`
+- Codex MCP secrets runtime: `/home/dev/int/tools/.runtime/codex-secrets/`
+- Cloud runtime: `/home/dev/int/tools/.runtime/cloud-access/`
 
 ##### Текущие утилиты
 
-- `duplex_bridge.py` — debate-bridge; по умолчанию пишет лог в `/int/tools/.runtime/codex/log/debate/duplex_bridge.log`
+- `duplex_bridge.py` — debate-bridge; по умолчанию пишет лог в `/home/dev/int/tools/.runtime/codex/log/debate/duplex_bridge.log`
 - `cleanup_agent_orphans.sh` — уборка осиротевших MCP/agent процессов
-- `install_orphan_cleaner_cron.sh` — установка канонической cron-записи на `/int/tools/codex/cleanup_agent_orphans.sh`
-- `cloud_access.sh` — ленивый доступ к `gdrive`/`yadisk` через `rclone mount` и единый runtime `RCLONE_CONFIG=/int/tools/.runtime/cloud-access/rclone.conf`
-- `install_cloud_access.sh` — развёртывание runtime-каталогов `/int/tools/.runtime/cloud-access`, mountpoints `/int/cloud/*` и user-level symlink units
+- `install_orphan_cleaner_cron.sh` — установка канонической cron-записи на `/home/dev/int/tools/codex/cleanup_agent_orphans.sh`
+- `cloud_access.sh` — ленивый доступ к `gdrive`/`yadisk` через `rclone mount` и единый runtime `RCLONE_CONFIG=/home/dev/int/tools/.runtime/cloud-access/rclone.conf`
+- `install_cloud_access.sh` — развёртывание runtime-каталогов `/home/dev/int/tools/.runtime/cloud-access`, mountpoints `/home/dev/int/cloud/*` и user-level symlink units
 - `bin/` — MCP entrypoints и прочие Codex-facing launcher'ы
 - Local delivery publish wrappers were removed; use explicit native commands and the target repo's current documented process for owner-requested push/deploy work.
 - `bin/agent_tool_routing.py` + `../config/agent-tool-routing.v1.json` — routing contract для repo-owned high-risk capabilities; blocked path не подменяется verified skill автоматически, fallback допустим только как explicit approved metadata.
@@ -238,17 +238,17 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 - `assets/codex-home/` — legacy reference для старого Codex home overlay; не active sync source
 - `projects/` — legacy reference для старых project-specific overlay-файлов; не синхронизируется repo scripts
 - Codex-home sync/detach entrypoints were removed; use native Codex mechanisms or explicit manual owner action.
-- `bin/codex-host-bootstrap` — bootstrap рабочего минимума `/int/tools/.runtime/**`, OpenClaw/cloud tooling; не пишет в Codex home
+- `bin/codex-host-bootstrap` — bootstrap рабочего минимума `/home/dev/int/tools/.runtime/**`, OpenClaw/cloud tooling; не пишет в Codex home
 - `bin/codex-host-verify` — проверка clean layout и целостности ссылок
 - `bin/codex-recovery-bundle` — export/import шифрованного recovery-бандла с секретным runtime-слоем
 
 ##### Recovery Layout
 
 - `~/.codex` должен содержать только Codex-generated runtime/state и файлы, созданные native documented Codex mechanisms или explicit manual owner action.
-- Наши wrapper'ы, templates и policy остаются в `/int/tools/codex`.
+- Наши wrapper'ы, templates и policy остаются в `/home/dev/int/tools/codex`.
 - Самописные helper scripts для Codex не храним в `~/.codex/scripts`; home-контур допускается только для native tools и обязательных runtime instructions/compat wrappers, если их нельзя вынести из home-layout.
-- Живые секреты для MCP храним в `/int/tools/.runtime/codex-secrets/`.
-- `OpenClaw` runtime живёт в `~/.openclaw`, а versioned overlay остаётся в `/int/tools/openclaw`.
+- Живые секреты для MCP храним в `/home/dev/int/tools/.runtime/codex-secrets/`.
+- `OpenClaw` runtime живёт в `~/.openclaw`, а versioned overlay остаётся в `/home/dev/int/tools/openclaw`.
 - Секретный слой OpenClaw для recovery bundle берётся из `~/.openclaw/secrets/`.
 - Repo scripts do not synchronize `assets/codex-home` or tracked `projects/` into Codex home.
 - dedicated Firefox MCP runtime использует repo-managed launcher'ы и project overlays отсюда; owner browser profile не является source-of-truth для automated browser-proof.
@@ -257,21 +257,21 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 
 1. Установить `codex-cli`.
 2. Восстановить секретный слой через `codex-recovery-bundle import`.
-3. Запустить `/int/tools/codex/bin/codex-host-bootstrap` для repo-local runtime bootstrap без изменения Codex home.
+3. Запустить `/home/dev/int/tools/codex/bin/codex-host-bootstrap` для repo-local runtime bootstrap без изменения Codex home.
 4. При необходимости выполнить `codex login`.
-5. Проверить контур через `/int/tools/codex/bin/codex-host-verify` и `/int/tools/openclaw/ops/verify.sh`.
+5. Проверить контур через `/home/dev/int/tools/codex/bin/codex-host-verify` и `/home/dev/int/tools/openclaw/ops/verify.sh`.
 
 ##### Cloud Access
 
-- Канонические unit-файлы лежат в `/int/tools/codex/systemd/` и подключаются в `~/.config/systemd/user/` через symlink.
-- Исключение для этого контура согласовано отдельно: runtime mountpoints и `rclone` config живут внутри `/int`, а не в `~/.codex`, чтобы Codex/OpenClaw работали с облаками через уже разрешённый файловый корень.
+- Канонические unit-файлы лежат в `/home/dev/int/tools/codex/systemd/` и подключаются в `~/.config/systemd/user/` через symlink.
+- Исключение для этого контура согласовано отдельно: runtime mountpoints и `rclone` config живут внутри `/home/dev/int`, а не в `~/.codex`, чтобы Codex/OpenClaw работали с облаками через уже разрешённый файловый корень.
 - Основной runtime:
-  - config: `/int/tools/.runtime/cloud-access/rclone.conf`
-  - cache: `/int/tools/.runtime/cloud-access/cache`
-  - logs: `/int/tools/.runtime/cloud-access/log`
-  - mounts: `/int/cloud/gdrive`, `/int/cloud/yadisk`
+  - config: `/home/dev/int/tools/.runtime/cloud-access/rclone.conf`
+  - cache: `/home/dev/int/tools/.runtime/cloud-access/cache`
+  - logs: `/home/dev/int/tools/.runtime/cloud-access/log`
+  - mounts: `/home/dev/int/cloud/gdrive`, `/home/dev/int/cloud/yadisk`
 - После настройки remotes используйте:
-  - `/int/tools/codex/cloud_access.sh config`
+  - `/home/dev/int/tools/codex/cloud_access.sh config`
   - `systemctl --user start rclone-mount-gdrive.service`
   - `systemctl --user start rclone-mount-yadisk.service`
 
@@ -297,8 +297,8 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 - этот каталог — legacy reference для project overlays; active Codex project config должен идти через native Codex mechanisms;
 - repo scripts не синхронизируют этот каталог в Codex home;
 - в tracked overlay не храним секреты;
-- реальные env-файлы живут в `/int/tools/.runtime/codex-secrets/`.
-- browser-proof overlays для dedicated Firefox MCP обязаны вызывать только repo-managed wrapper'ы из `/int/tools/codex/bin/**`, а не raw `npx`.
+- реальные env-файлы живут в `/home/dev/int/tools/.runtime/codex-secrets/`.
+- browser-proof overlays для dedicated Firefox MCP обязаны вызывать только repo-managed wrapper'ы из `/home/dev/int/tools/codex/bin/**`, а не raw `npx`.
 
 ### `codex/tools/mcp-obsidian-memory/`
 
@@ -322,21 +322,21 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 ##### Run
 
 ```bash
-cd /int/tools/codex/tools/mcp-obsidian-memory
+cd /home/dev/int/tools/codex/tools/mcp-obsidian-memory
 npm start
 ```
 
 ##### Smoke
 
 ```bash
-node /int/tools/codex/tools/mcp-obsidian-memory/scripts/smoke-client.mjs
+node /home/dev/int/tools/codex/tools/mcp-obsidian-memory/scripts/smoke-client.mjs
 ```
 
 ### `codex/tools/obsidian-desktop/`
 
 #### Obsidian Desktop Config (Repo-managed)
 
-Все канонические конфиги и инструкции для desktop-интеграции Obsidian хранятся в `/int/tools/codex/tools/obsidian-desktop`.
+Все канонические конфиги и инструкции для desktop-интеграции Obsidian хранятся в `/home/dev/int/tools/codex/tools/obsidian-desktop`.
 Они открывают root-vault агента `/2brain`.
 
 ##### Файлы
@@ -349,13 +349,13 @@ node /int/tools/codex/tools/mcp-obsidian-memory/scripts/smoke-client.mjs
 
 ##### Применение
 ```bash
-bash /int/tools/codex/tools/obsidian-desktop/install.sh
+bash /home/dev/int/tools/codex/tools/obsidian-desktop/install.sh
 ```
 
 После запуска:
-- `~/.local/bin/obsidian -> /int/tools/codex/tools/obsidian-desktop/launcher.sh`
-- `~/.local/share/applications/obsidian-memory.desktop -> /int/tools/codex/tools/obsidian-desktop/obsidian-memory.desktop`
-- `~/.config/obsidian/obsidian.json -> /int/tools/codex/tools/obsidian-desktop/obsidian.json`
+- `~/.local/bin/obsidian -> /home/dev/int/tools/codex/tools/obsidian-desktop/launcher.sh`
+- `~/.local/share/applications/obsidian-memory.desktop -> /home/dev/int/tools/codex/tools/obsidian-desktop/obsidian-memory.desktop`
+- `~/.config/obsidian/obsidian.json -> /home/dev/int/tools/codex/tools/obsidian-desktop/obsidian.json`
 
 Это гарантирует, что конфиги и launcher'ы не зависят от `~/.codex/tools`.
 
@@ -363,7 +363,7 @@ bash /int/tools/codex/tools/obsidian-desktop/install.sh
 
 #### intDBA
 
-`/int/tools/dba` — self-contained operator CLI `intDBA` для remote Postgres/Supabase профилей с этой машины.
+`/home/dev/int/tools/dba` — self-contained operator CLI `intDBA` для remote Postgres/Supabase профилей с этой машины.
 
 ##### Контракт
 
@@ -371,28 +371,28 @@ bash /int/tools/codex/tools/obsidian-desktop/install.sh
 - локальный `.env` допустим только как untracked runtime-файл рядом с инструментом;
 - временные dump/log/CSV-артефакты живут только в ignored путях `.tmp/` и `logs/`;
 - `DBA_DATA_REPO` может задаваться как через process env, так и через локальный `dba/.env`; типовые runtime-ошибки должны выходить как обычные `intDBA:` сообщения без traceback;
-- на Windows `dba` не должен автоматически подхватывать `D:\int\data`; для dev backend работы используется `dev@intdata.pro:/int/data`, а локальный disposable flow требует явный `--repo`/`DBA_DATA_REPO`;
+- на Windows `dba` не должен автоматически подхватывать `D:\int\data`; для dev backend работы используется `dev@intdata.pro:/home/dev/int/core/backend`, а локальный disposable flow требует явный `--repo`/`DBA_DATA_REPO`;
 - native migration-path тоже должен быть самодостаточным: `bootstrap` использует тот же profile-password, а `incremental` при необходимости сам прокидывает найденный PostgreSQL `bin` в `PATH` дочернего `bash`;
-- для `/int/data` tool не дублирует schema ownership и migration engine, а переиспользует owner flow через `init/010_supabase_migrate.sh`, `init/schema.sql` и `migration_manifest.lock`.
+- backend source is `/home/dev/int/core/backend`; verify its current migration entrypoint before using the historical `init/010_supabase_migrate.sh` example.
 
 ##### Основные команды
 
 - `doctor` — проверка native PostgreSQL CLI, TCP и SQL для профиля;
 - `sql` / `file` — ad-hoc SQL и SQL-файлы, по умолчанию в read-only режиме;
 - `dump` / `restore` / `clone` / `copy` — перенос данных между профилями через локальную машину;
-- `migrate status` / `migrate data` — remote-операции для migration flow `/int/data`.
+- `migrate status` / `migrate data` — remote-операции для backend migration flow; укажите актуальный checkout явно.
 
 ##### Safety
 
 - mutating-команды требуют `--approve-target <profile>`;
 - для `WRITE_CLASS=prod` дополнительно обязателен `--force-prod-write`;
-- `intDBA` доступен как самостоятельный CLI через `/int/tools/dba`; совместимый adapter `dba` в `mcp-intdata-cli.py` не регистрируется и не является устанавливаемым plugin ID. `codex/bin/intdb.*` compatibility wrappers не считаются активными поверхностями.
+- `intDBA` доступен как самостоятельный CLI через `/home/dev/int/tools/dba`; совместимый adapter `dba` в `mcp-intdata-cli.py` не регистрируется и не является устанавливаемым plugin ID. `codex/bin/intdb.*` compatibility wrappers не считаются активными поверхностями.
 
 ### `delivery/`
 
 #### Delivery Ops
 
-`/int/tools/delivery` — внешний host-config, devops, docops, monitoring и delivery contour для intData-family сервисов.
+`/home/dev/int/tools/delivery` — внешний host-config, devops, docops, monitoring и delivery contour для intData-family сервисов.
 
 ##### Что живёт здесь
 
@@ -414,7 +414,7 @@ bash /int/tools/codex/tools/obsidian-desktop/install.sh
 - `docops/` — docs/process helpers;
 - `monitoring/` — monitoring templates.
 
-`/int/data` остаётся owner только backend-core. Всё, что является внешним tooling, host-config или rollout слоем, должно жить в `delivery/`.
+`/home/dev/int/core/backend` остаётся owner только backend-core. Всё, что является внешним tooling, host-config или rollout слоем, должно жить в `delivery/`.
 
 ### `delivery/configs/`
 
@@ -432,7 +432,7 @@ bash /int/tools/codex/tools/obsidian-desktop/install.sh
 - canonical backend migrations/contracts/functions
 - runtime-state и живые секреты
 
-Если конфиг обслуживает хост, reverse proxy, systemd или внешний rollout path, его место здесь, а не в `/int/data`.
+Если конфиг обслуживает хост, reverse proxy, systemd или внешний rollout path, его место здесь, а не в `/home/dev/int/core/backend`.
 
 ### `delivery/configs/nginx/`
 
@@ -440,8 +440,8 @@ bash /int/tools/codex/tools/obsidian-desktop/install.sh
 
 Каталог содержит итоговые конфиги `nginx`, сформированные на основе действующих `apache2` vhost'ов.
 Исключения:
-- [`api.intdata.pro.conf`](/int/tools/delivery/configs/nginx/api.intdata.pro.conf) ведётся отдельно как host-level custom vhost для Supabase API и не генерируется из Apache.
-- [`tools.intdata.pro.conf`](/int/tools/delivery/configs/nginx/tools.intdata.pro.conf) обслуживает статический публичный frontend из [`web/`](/int/tools/web/index.html).
+- [`api.intdata.pro.conf`](/home/dev/int/tools/delivery/configs/nginx/api.intdata.pro.conf) ведётся отдельно как host-level custom vhost для Supabase API и не генерируется из Apache.
+- [`tools.intdata.pro.conf`](/home/dev/int/tools/delivery/configs/nginx/tools.intdata.pro.conf) обслуживает статический публичный frontend из [`web/`](/home/dev/int/tools/web/index.html).
 
 ###### Назначение
 
@@ -511,14 +511,14 @@ bash /int/tools/codex/tools/obsidian-desktop/install.sh
 
 #### configs/systemd
 
-Шаблоны systemd-юнитов и вспомогательные обёртки. См. раздел `delivery/configs/` ниже и [delivery/AGENTS.md](/int/tools/delivery/AGENTS.md) за регламент.
+Шаблоны systemd-юнитов и вспомогательные обёртки. См. раздел `delivery/configs/` ниже и [delivery/AGENTS.md](/home/dev/int/tools/delivery/AGENTS.md) за регламент.
 
 ##### Новые юниты
 - `meta-intdata-mailpit-dev.service` — orchestrator для docker-compose Mailpit (QA SMTP/UI).
 
 ### `delivery/devops/`
 
-#### [delivery/devops](/int/tools/delivery/devops)
+#### [delivery/devops](/home/dev/int/tools/delivery/devops)
 
 Скрипты DevOps-цикла (rebuild, restart, smoke) и инфраструктурные инструменты. Общие принципы описаны в разделах `delivery/` и `delivery/devops/` ниже.
 
@@ -526,11 +526,13 @@ bash /int/tools/codex/tools/obsidian-desktop/install.sh
 
 ##### Keycloak + Kill Bill (IAM биллинг/подписки)
 
-- **/int/id/docker-compose.yaml** с профилем `keycloak` — standalone стек Keycloak + Kill Bill + Kaui + PostgreSQL.
+Этот раздел сохраняет исторический пример. Checkout `/home/dev/int/id` на этом хосте отсутствует; команды ниже нельзя выполнять до установления владельца и актуального пути Identity.
+
+- **/home/dev/int/id/docker-compose.yaml** с профилем `keycloak` — standalone стек Keycloak + Kill Bill + Kaui + PostgreSQL.
 - **setup_keycloak_killbill.sh** — управляющий скрипт (`start|stop|restart|logs|down|status`), принимает `--env` для указания файла переменных, проверяет обязательные секреты и автоматически бутстрапит Realm/тенант после запуска.
 - Дополнительные флаги: `--clear-theme-cache` (очищает `kc-gzip-cache` в контейнере Keycloak после `up/restart`) и `--selenium-smoke` (запускает `delivery/devops/run_selenium_smoke.sh` для браузерного smoke).
 - **killbill.overrides/killbill.properties.example** — пример overrides для Kill Bill (скопируйте в `killbill.properties` и подставьте секреты).
-- **/int/id/scripts/devops/run_selenium_smoke.sh** — опциональный Selenium UI smoke для standalone repo Identity; выполняется только если selenium tests добавлены локально.
+- **/home/dev/int/id/scripts/devops/run_selenium_smoke.sh** — опциональный Selenium UI smoke для standalone repo Identity; выполняется только если selenium tests добавлены локально.
 
 ###### Быстрый старт
 
@@ -561,16 +563,16 @@ bash /int/tools/codex/tools/obsidian-desktop/install.sh
 ####    killbill.overrides/killbill.properties и обновите значения.
 #
 #### 3. Запустите стек:
-/int/id/scripts/devops/setup_keycloak_killbill.sh start --env /int/id/.env
+/home/dev/int/id/scripts/devops/setup_keycloak_killbill.sh start --env /home/dev/int/id/.env
 #### при изменении тем Keycloak добавьте --clear-theme-cache, чтобы сбросить кеш статических ресурсов
 #### для end-to-end smoke можно дополнительно указать --selenium-smoke
 #### при старте выполняются проверки env и bootstrap Keycloak/Kill Bill (можно отключить, установив ID_BOOTSTRAP_DISABLED=1)
 
 #### 4. Проверить состояние:
-/int/id/scripts/devops/setup_keycloak_killbill.sh status
+/home/dev/int/id/scripts/devops/setup_keycloak_killbill.sh status
 
 #### 5. Логи конкретного сервиса:
-/int/id/scripts/devops/setup_keycloak_killbill.sh logs keycloak
+/home/dev/int/id/scripts/devops/setup_keycloak_killbill.sh logs keycloak
 ```
 
 > **Примечание:** `docker compose down` удаляет контейнеры/volume’ы; используйте опцию `down` скрипта только при необходимости.
@@ -592,8 +594,8 @@ bash /int/tools/codex/tools/obsidian-desktop/install.sh
 - Примеры:
 
   ```bash
-  /int/id/scripts/devops/run_selenium_smoke.sh -q
-  CHROME_BINARY=/opt/google/chrome/chrome /int/id/scripts/devops/run_selenium_smoke.sh --maxfail=1
+  /home/dev/int/id/scripts/devops/run_selenium_smoke.sh -q
+  CHROME_BINARY=/opt/google/chrome/chrome /home/dev/int/id/scripts/devops/run_selenium_smoke.sh --maxfail=1
   ```
 
 - Скриншоты и другие артефакты сохраняются в `tests/web/screenshots/`; не коммитим чувствительные данные.
@@ -615,9 +617,9 @@ bash /int/tools/codex/tools/obsidian-desktop/install.sh
 
 ##### Mailpit (единый SMTP шлюз)
 
-- **/int/id/docker-compose.yaml** с профилем `mailpit` — standalone манифест SMTP/UI сервиса (`mail.intdata.pro`, `smtp.intdata.pro`).
+- **/home/dev/int/id/docker-compose.yaml** с профилем `mailpit` — standalone манифест SMTP/UI сервиса (`mail.intdata.pro`, `smtp.intdata.pro`).
 ```
-docker compose -f /int/id/docker-compose.yaml --profile mailpit ps
+docker compose -f /home/dev/int/id/docker-compose.yaml --profile mailpit ps
 ```
 - **run-mailpit.sh** — zero-wait цикл (`rebuild → restart → logs → log-scan → smoke`), готовит каталоги и проверяет API `/api/v1/info` через `mail.intdata.pro`.
 - **meta-intdata-mailpit-dev.service** — systemd-юнит (см. `configs/systemd/`) для автономного рестарта. Optional host-local env читается из `/etc/intdata/mailpit/mailpit.env`.
@@ -706,10 +708,10 @@ delivery/devops/run-openbao.sh
 
 ##### Утилиты и вспомогательные скрипты
 
-- **check_duplicates.py** — ищет дубликаты файлов по SHA-1. По умолчанию сканирует `/int/brain/web/static/diagnostics`, игнорируя `.git`, `node_modules`, build-артефакты. Код возврата `0`, если дублей нет, и `1`, если найдены совпадения. Пример:\
+- **check_duplicates.py** — ищет дубликаты файлов по SHA-1. По умолчанию сканирует `/home/dev/int/brain/web/static/diagnostics`, игнорируя `.git`, `node_modules`, build-артефакты. Код возврата `0`, если дублей нет, и `1`, если найдены совпадения. Пример:\
   `python3 delivery/devops/check_duplicates.py shared/assets -e build -e cache`.
 
-- **dev-redeploy.sh** — стандартный DevOps-цикл для ветки `dev`: подтягивает `.env`, запускает rebuild/restart сервисов, собирает логи в `logs/devops/<UTC>/`, прогоняет `log-scan.py`, выполняет HTTP-smoke и дополнительно запускает [`smoke.sh`](/int/tools/delivery/devops/smoke.sh) (включая OpenBao). Использование:\
+- **dev-redeploy.sh** — стандартный DevOps-цикл для ветки `dev`: подтягивает `.env`, запускает rebuild/restart сервисов, собирает логи в `logs/devops/<UTC>/`, прогоняет `log-scan.py`, выполняет HTTP-smoke и дополнительно запускает [`smoke.sh`](/home/dev/int/tools/delivery/devops/smoke.sh) (включая OpenBao). Использование:\
   `delivery/devops/dev-redeploy.sh`.
 
 - **generate_nginx_from_apache.py** — миграционная утилита: читает активные Apache vhost’ы и генерирует эквивалентные прокси-конфиги nginx (HTTP+HTTPS) в `configs/nginx/generated/`. Требует root-доступ. Запуск:\
@@ -732,7 +734,7 @@ delivery/devops/run-openbao.sh
 - **rebuild_service.sh** — точечный пересбор docker-compose сервиса: вызовет `docker compose build <service>` + `up -d`. Указываем compose-name из корневого `docker-compose.yml`:\
   `delivery/devops/rebuild_service.sh nexus-web`.
 
-- **rebuild_smart_sidebar.sh** — пересборка фронтенда Nexus из canonical repo `/int/brain/web`, затем синхронизация артефактов в target web-root. Использование:\
+- **rebuild_smart_sidebar.sh** — пересборка фронтенда Nexus из canonical repo `/home/dev/int/brain/web`, затем синхронизация артефактов в target web-root. Использование:\
   `delivery/devops/rebuild_smart_sidebar.sh`.
 
 - **run_task_reminder_worker.py** — entrypoint для фонового воркера напоминаний (используется в systemd/cron). Интервал опроса берёт из `TASK_REMINDER_INTERVAL` (секунды). Запуск:\
@@ -748,7 +750,7 @@ delivery/devops/run-openbao.sh
 
 #### Gemini ↔ OpenAI Proxy
 
-Этот каталог теперь живёт внутри `/int/tools` как internal-vendor copy, а не как
+Этот каталог теперь живёт внутри `/home/dev/int/tools` как internal-vendor copy, а не как
 самостоятельный git-репозиторий. Источник происхождения:
 `https://inthub.com/Brioch/gemini-openai-proxy` (MIT License, см. `LICENSE`).
 
@@ -940,7 +942,7 @@ lockctl wrappers, MCP tools or runtime surfaces.
 #### `intnode coord`
 
 `intnode coord` is the Git-aware coordination runtime for parallel agent edits.
-It is owned by `/int/node`; the `intnode@inttools` plugin contributes only usage guidance for this existing CLI and does not bundle its runtime.
+It is owned by `/home/dev/int/node`; the `intnode@inttools` plugin contributes only usage guidance for this existing CLI and does not bundle its runtime.
 
 ##### Shell UX
 
@@ -951,7 +953,7 @@ intnode coord
 intnode coord --help
 ```
 
-Implementation/core lives in `/int/node`. `/int/tools` owns no coordination
+Implementation/core lives in `/home/dev/int/node`. `/home/dev/int/tools` owns no coordination
 source, installer, runtime alias, or MCP tool; its marketplace
 entry only points to the Node-owned `coord` guidance skill.
 
@@ -979,7 +981,7 @@ intnode coord release --mine
 
 #### openclaw tools overlay
 
-`/int/tools/openclaw` — versioned overlay для локального OpenClaw.
+`/home/dev/int/tools/openclaw` — versioned overlay для локального OpenClaw.
 
 Legacy in-tree runtime root decommissioned и больше не является runtime-источником; исторические артефакты сохранены в отчётах decommission.
 
@@ -1007,31 +1009,31 @@ Legacy in-tree runtime root decommissioned и больше не является
 Быстрые команды:
 
 ```bash
-bash /int/tools/openclaw/ops/install.sh
-bash /int/tools/openclaw/ops/verify.sh
+bash /home/dev/int/tools/openclaw/ops/install.sh
+bash /home/dev/int/tools/openclaw/ops/verify.sh
 ```
 
 Основной runbook:
 
-- [reinstall-and-restore.md](/int/tools/openclaw/docs/reinstall-and-restore.md)
-- [openclaw-concurrency-audit-2026-03-09.md](/int/tools/openclaw/docs/openclaw-concurrency-audit-2026-03-09.md)
-- [decommission-openclaw-2026-03-15.md](/int/tools/openclaw/reports/decommission-openclaw-2026-03-15.md)
+- [reinstall-and-restore.md](/home/dev/int/tools/openclaw/docs/reinstall-and-restore.md)
+- [openclaw-concurrency-audit-2026-03-09.md](/home/dev/int/tools/openclaw/docs/openclaw-concurrency-audit-2026-03-09.md)
+- [decommission-openclaw-2026-03-15.md](/home/dev/int/tools/openclaw/reports/decommission-openclaw-2026-03-15.md)
 
 ### `probe/`
 
 #### Bridge Probe Scripts
 
-`probe/` хранит versioned maintenance и audit-утилиты для мониторинга intData Bridge Probe, которые не входят в prod-core репозиторий `/int/bridge`.
+`probe/` хранит versioned maintenance и audit-утилиты для мониторинга intData Bridge Probe, которые не входят в prod-core репозиторий `/home/dev/int/core/bridge`.
 
 ##### Контракт
 
-- `/int/bridge` содержит только код, deploy-конфиг и проверки.
+- `/home/dev/int/core/bridge` содержит только код, deploy-конфиг и проверки.
 - Versioned maintenance scripts и исторические audit snapshots мониторинга intData Bridge Probe живут здесь.
 - Mutable state и runtime-data мониторинга живут вне git: `~/.local/state/probe-monitor` и `~/.local/share/probe-monitor`.
-- Migration/cutover идёт через `/int/bridge/ops/migrate_runtime.sh`, затем `ops/cutover.sh --install-units --restart-services` и `ops/verify.sh --runtime`.
+- Migration/cutover идёт через `/home/dev/int/core/bridge/ops/migrate_runtime.sh`, затем `ops/cutover.sh --install-units --restart-services` и `ops/verify.sh --runtime`.
 
 ##### Состав
 
-- `collect_audit.sh` — сбор audit snapshot по текущему checkout `/int/bridge`
+- `collect_audit.sh` — сбор audit snapshot по текущему checkout `/home/dev/int/core/bridge`
 - `docs/critical_assets.txt` — список must-survive assets и внешних runtime-path
 - `docs/machine-audit-2026-03-02.md` — исторический audit snapshot, перенесённый из `probe`

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CODEX_RUNTIME_ROOT="${CODEX_RUNTIME_ROOT:-/int/tools/.runtime}"
+CODEX_RUNTIME_ROOT="${CODEX_RUNTIME_ROOT:-/home/dev/int/tools/.runtime}"
 CODEX_SECRETS_ROOT="${CODEX_SECRETS_ROOT:-$CODEX_RUNTIME_ROOT/codex-secrets}"
 
 codex_primary_env_hint() {

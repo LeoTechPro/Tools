@@ -40,7 +40,7 @@ def resolve_int_root() -> Path:
         if parent.name.lower() == "int":
             return parent.resolve()
 
-    candidates = (Path("D:/int"), Path("/int")) if os.name == "nt" else (Path("/int"), Path("D:/int"))
+    candidates = (Path("D:/int"), Path("/home/dev/int")) if os.name == "nt" else (Path("/home/dev/int"), Path("D:/int"))
     for candidate in candidates:
         if candidate.exists():
             return candidate.resolve()
@@ -126,8 +126,8 @@ def export_bundle(bundle_path: Path) -> None:
                 {
                     "created_at_utc": datetime.now(timezone.utc).isoformat(),
                     "paths": [
-                        "/int/tools/.runtime/codex-secrets/",
-                        "/int/tools/.runtime/cloud-access/rclone.conf",
+                        "/home/dev/int/tools/.runtime/codex-secrets/",
+                        "/home/dev/int/tools/.runtime/cloud-access/rclone.conf",
                         "~/.openclaw/secrets/",
                     ],
                 },

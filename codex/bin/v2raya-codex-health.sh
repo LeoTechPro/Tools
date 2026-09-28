@@ -2,7 +2,7 @@
 set -eu
 
 CODEX_USER="${V2RAYA_CODEX_USER:-agents}"
-REPO_ROOT="${V2RAYA_CODEX_REPO_ROOT:-/int/tools}"
+REPO_ROOT="${V2RAYA_CODEX_REPO_ROOT:-/home/dev/int/tools}"
 SNAP_DATA="${V2RAYA_SNAP_DATA:-/var/snap/v2raya/current}"
 HOOK_SOURCE="${V2RAYA_CORE_HOOK_SOURCE:-$REPO_ROOT/codex/bin/v2raya-core-hook-remove-quic.sh}"
 HOOK_TARGET="${V2RAYA_CORE_HOOK_TARGET:-$SNAP_DATA/etc/core-hook-remove-quic.sh}"

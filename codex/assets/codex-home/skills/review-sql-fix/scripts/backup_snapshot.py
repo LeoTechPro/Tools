@@ -37,7 +37,7 @@ def _now_utc_stamp() -> str:
 
 def _allowed_roots() -> list[Path]:
     roots: list[Path] = []
-    for raw in ("/int", "/home/leon", "D:/int", "D:/home/leon", "C:/int", "C:/home/leon"):
+    for raw in ("/home/dev/int", "/home/dev/tmp", "/home/leon", "D:/int", "D:/home/leon", "C:/int", "C:/home/leon"):
         root = Path(raw).resolve()
         if root not in roots:
             roots.append(root)
@@ -45,9 +45,9 @@ def _allowed_roots() -> list[Path]:
 
 
 def _default_backup_base() -> Path:
-    # Use explicit drive-qualified roots first on Windows to avoid resolving "/int"
+    # Use explicit drive-qualified roots first on Windows to avoid resolving POSIX-style paths
     # against an unintended current drive.
-    candidates = [Path("D:/int/.tmp"), Path("C:/int/.tmp"), Path("/int/.tmp")]
+    candidates = [Path("D:/int/.tmp"), Path("C:/int/.tmp"), Path("/home/dev/tmp")]
     for candidate in candidates:
         if candidate.exists():
             return candidate.resolve()

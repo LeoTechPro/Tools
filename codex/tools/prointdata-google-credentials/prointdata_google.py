@@ -559,7 +559,7 @@ def build_parser() -> argparse.ArgumentParser:
     replicate.add_argument("--ssh-target", default="vds")
     replicate.add_argument(
         "--remote-command",
-        default="/int/tools/codex/tools/prointdata-google-credentials/prointdata-google",
+        default="/home/dev/int/tools/codex/tools/prointdata-google-credentials/prointdata-google",
     )
     return parser
 

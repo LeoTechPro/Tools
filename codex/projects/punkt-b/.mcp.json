@@ -4,13 +4,13 @@
       "command": "bash",
       "args": [
         "-lc",
-        "set -a; if [ -f /int/tools/.runtime/codex-secrets/bizon365-punkt-b.env ]; then . /int/tools/.runtime/codex-secrets/bizon365-punkt-b.env; elif [ -f \"$HOME/.codex/var/bizon365-punkt-b.env\" ]; then . \"$HOME/.codex/var/bizon365-punkt-b.env\"; fi; set +a; export BIZON365_MCP_CLIENT_PROFILE=\"${BIZON365_MCP_CLIENT_PROFILE:-codex}\"; exec python3 /int/tools/codex/bin/mcp-bizon365.py"
+        "set -a; if [ -f /home/dev/int/tools/.runtime/codex-secrets/bizon365-punkt-b.env ]; then . /home/dev/int/tools/.runtime/codex-secrets/bizon365-punkt-b.env; elif [ -f \"$HOME/.codex/var/bizon365-punkt-b.env\" ]; then . \"$HOME/.codex/var/bizon365-punkt-b.env\"; fi; set +a; export BIZON365_MCP_CLIENT_PROFILE=\"${BIZON365_MCP_CLIENT_PROFILE:-codex}\"; exec python3 /home/dev/int/tools/codex/bin/mcp-bizon365.py"
       ]
     },
     "salebot": {
       "command": "node",
       "args": [
-        "/int/tools/codex/bin/mcp-salebot.mjs"
+        "/home/dev/int/tools/codex/bin/mcp-salebot.mjs"
       ]
     },
     "playwright-test": {

@@ -298,7 +298,7 @@ class AdapterDispatcher:
         if not password:
             secret_path = Path(os.getenv(
                 "PUNKT_B_ACCOUNTING_MAIL_SECRET_FILE",
-                "/int/.runtime/codex-secrets/punktb-accounting-mail.env",
+                "/home/dev/int/.runtime/codex-secrets/punktb-accounting-mail.env",
             ))
             try:
                 for raw_line in secret_path.read_text(encoding="utf-8").splitlines():
@@ -344,7 +344,7 @@ class AdapterDispatcher:
     @staticmethod
     async def _project_files_search(payload: dict[str, Any], _caller_token: str) -> Any:
         query = str(payload["query"]).casefold()
-        root = Path("/int/cloud/gdrive")
+        root = Path("/home/dev/int/cloud/gdrive")
         if not root.is_dir():
             raise GatewayError("ADAPTER_NOT_CONFIGURED", "Canonical project-files VFS is unavailable")
 

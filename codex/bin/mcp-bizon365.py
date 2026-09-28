@@ -18,7 +18,7 @@ def resolve_default_env_path() -> Path:
 
 
 def default_runtime_root() -> Path:
-    return Path(os.environ.get("CODEX_RUNTIME_ROOT", "/int/tools/.runtime"))
+    return Path(os.environ.get("CODEX_RUNTIME_ROOT", "/home/dev/int/tools/.runtime"))
 
 
 DEFAULT_ENV_PATH = resolve_default_env_path()
@@ -292,7 +292,7 @@ class BizonClient:
         self.project_id = str(env.get("BIZON365_PROJECT_ID", "")).strip()
         self.login_name = str(env.get("BIZON365_LOGIN", "")).strip()
         self.password = str(env.get("BIZON365_PASSWORD", "")).strip()
-        self.archive_root = Path(str(env.get("BIZON365_ARCHIVE_YADISK_ROOT", "/int/cloud/yadisk/Вебинары")).strip())
+        self.archive_root = Path(str(env.get("BIZON365_ARCHIVE_YADISK_ROOT", "/home/dev/int/cloud/yadisk/Вебинары")).strip())
         self.download_dir = Path(str(env.get("BIZON365_DOWNLOAD_DIR", DEFAULT_DOWNLOAD_DIR)).strip())
         self.download_dir.mkdir(parents=True, exist_ok=True)
         if not self.project_id:

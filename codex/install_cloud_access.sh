@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_ROOT="/int/tools/codex"
+SCRIPT_ROOT="/home/dev/int/tools/codex"
 SYSTEMD_ROOT="$HOME/.config/systemd/user"
 CANONICAL_SYSTEMD="$SCRIPT_ROOT/systemd"
 
-mkdir -p "$SYSTEMD_ROOT" /int/tools/.runtime/cloud-access/cache /int/tools/.runtime/cloud-access/log /int/cloud/gdrive /int/cloud/yadisk
+mkdir -p "$SYSTEMD_ROOT" /home/dev/int/tools/.runtime/cloud-access/cache /home/dev/int/tools/.runtime/cloud-access/log /home/dev/int/cloud/gdrive /home/dev/int/cloud/yadisk
 
 ln -sfn "$CANONICAL_SYSTEMD/rclone-mount-gdrive.service" "$SYSTEMD_ROOT/rclone-mount-gdrive.service"
 ln -sfn "$CANONICAL_SYSTEMD/rclone-mount-yadisk.service" "$SYSTEMD_ROOT/rclone-mount-yadisk.service"
@@ -17,7 +17,7 @@ cat <<'EOF'
 Cloud access runtime is prepared.
 
 Next steps:
-  1. Run `/int/tools/codex/cloud_access.sh config`
+  1. Run `/home/dev/int/tools/codex/cloud_access.sh config`
   2. Create remotes `gdrive` (drive) and `yadisk` (yandex)
   3. Start the mounts:
      systemctl --user start rclone-mount-gdrive.service
