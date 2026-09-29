@@ -176,7 +176,7 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 - Active plugin category: `Developer Tools`.
 - Removed active plugin IDs: `coordctl`, `agent-plane`, `dba`, `intprobe`, `intdba`, `lockctl`, `multica`, `openspec`, `intdata-governance`, `intdata-vault`, `mempalace`, `cabinet`.
 - Cabinet-related inventory/import tooling is outside public intData-tools; old standalone local product directories are not deleted without count-check and owner acceptance.
-- `intdata-control` и `intdata-runtime` являются только host-native MCP-профилями, а не plugin-пакетами. Каждая ОС отдельно регистрирует эти два MCP-профиля через native `codex mcp add` с абсолютными путями к проверенному Python и `codex/bin/mcp-intdata-cli.py`; standalone plugin ID `dba` удалён.
+- `intdata-control`, `intdata-runtime` и совместимый `dba` — host-native MCP-профили, не plugin-пакеты. На Linux проверенный выпуск кода устанавливается вне checkout: `/usr/local/lib/intdata/mcp-tools/releases/<commit>/codex/bin/mcp-intdata-cli.py`. Регистрируйте каждый профиль через native `codex mcp add` с установленным путём, Python `-B`, `INT_ROOT=/home/dev/int` для операций над исходниками и `PYTHONDONTWRITEBYTECODE=1`; текущие регистрации проверяются через `codex mcp get <profile>`. На другой ОС используйте её проверенный установленный путь. Standalone plugin ID `dba` удалён.
 - Установка или переустановка plugin-пакета сама по себе не создаёт и не заменяет MCP-регистрации. Default registration mode только сравнивает inventory; apply всегда оставляет rollback backup и не переносит env/cwd из существующих записей.
 - CLI-backed MCP profiles принимают только structured command args; arbitrary shell strings не поддерживаются.
 - Mutating commands require `confirm_mutation: true` and `issue_context` in `INT-*` format.
@@ -378,7 +378,7 @@ bash /home/dev/int/tools/codex/tools/obsidian-desktop/install.sh
 
 - mutating-команды требуют `--approve-target <profile>`;
 - для `WRITE_CLASS=prod` дополнительно обязателен `--force-prod-write`;
-- `intDBA` доступен как самостоятельный CLI через `/home/dev/int/tools/dba`; совместимый adapter `dba` в `mcp-intdata-cli.py` не регистрируется и не является устанавливаемым plugin ID. `codex/bin/intdb.*` compatibility wrappers не считаются активными поверхностями.
+- `intDBA` доступен как самостоятельный CLI из установленного выпуска либо для разработки через `/home/dev/int/tools/dba`. Совместимый `dba` зарегистрирован как host-native MCP-профиль установленного адаптера; он не является plugin ID. Защищённый профиль БД хранится вне checkout в `/home/dev/.config/intdata/credentials/dba.env`, а временные файлы — вне checkout. `codex/bin/intdb.*` compatibility wrappers не считаются активными поверхностями.
 
 ### `delivery/`
 
