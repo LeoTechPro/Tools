@@ -20,7 +20,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 
 TOOL_ROOT = Path(__file__).resolve().parents[1]
-INT_ROOT = TOOL_ROOT.parent.parent
+INT_ROOT = Path(os.environ.get("INT_ROOT") or TOOL_ROOT.parent.parent).resolve()
 DEFAULT_DATA_REPO_ENV = "DBA_DATA_REPO"
 PROFILE_PATTERN = re.compile(r"^DBA_PROFILE__([A-Z0-9_]+)__([A-Z0-9_]+)$")
 SAFE_TABLE_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$")

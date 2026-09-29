@@ -26,6 +26,17 @@ ENTRYPOINT_SPEC.loader.exec_module(entrypoints)
 
 
 class DBATests(unittest.TestCase):
+    def test_explicit_development_root_protects_checkout_from_installed_dba(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir, mock.patch.dict(os.environ, {"INT_ROOT": tmpdir}):
+            spec = spec_from_file_location("installed_dba_module", MODULE_PATH)
+            assert spec and spec.loader
+            module = module_from_spec(spec)
+            with mock.patch.dict(sys.modules, {spec.name: module}):
+                spec.loader.exec_module(module)
+            self.assertEqual(Path(tmpdir).resolve(), module.INT_ROOT)
+            with self.assertRaises(module.DBAError):
+                module._external_linux_path("DBA_ENV_FILE", Path(tmpdir) / ".env")
+
     def test_entrypoint_confirmation_requires_exact_target(self) -> None:
         with self.assertRaises(entrypoints.WrapperError):
             entrypoints._require_confirmation("wrong", "punkt_b_prod")
