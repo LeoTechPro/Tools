@@ -26,7 +26,7 @@ def _schema(properties: dict[str, Any], required: list[str] | None = None) -> di
 
 
 COMMON_RUN_PROPS = {
-    "cwd": {"type": "string", "description": "Working directory under D:/int. Defaults to D:/int/tools."},
+    "cwd": {"type": "string", "description": "Working directory under the configured development master (INT_ROOT); defaults to its Tools checkout."},
     "timeout_sec": {"type": "integer", "description": "Command timeout in seconds."},
 }
 
