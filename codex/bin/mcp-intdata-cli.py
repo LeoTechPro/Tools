@@ -167,9 +167,9 @@ def _has_arg(args: list[str], flag: str) -> bool:
 
 
 def _cwd(raw: Any) -> str:
-    base = Path(str(raw or ROOT_DIR)).resolve()
-    allowed_roots = [ROOT_DIR.resolve(), INT_ROOT.resolve()]
-    if not any(base == root or root in base.parents for root in allowed_roots):
+    default = ROOT_DIR if ROOT_DIR.is_relative_to(INT_ROOT) else INT_ROOT / "tools"
+    base = Path(str(raw or default)).resolve()
+    if not base.is_relative_to(INT_ROOT):
         raise ValueError(f"cwd must be under {INT_ROOT}")
     return str(base)
 

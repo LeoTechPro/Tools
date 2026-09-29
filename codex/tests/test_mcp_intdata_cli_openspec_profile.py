@@ -16,12 +16,16 @@ SPEC.loader.exec_module(MODULE)
 class OpenSpecProfileTest(unittest.TestCase):
     def test_installed_adapter_uses_explicit_development_root(self) -> None:
         with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"INT_ROOT": tmp}):
+            (Path(tmp) / "tools").mkdir()
             spec = importlib.util.spec_from_file_location("installed_mcp_intdata_cli", MODULE_PATH)
             assert spec and spec.loader
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             self.assertEqual(Path(tmp).resolve(), module.INT_ROOT)
             self.assertEqual(str(Path(tmp).resolve()), module._cwd(tmp))
+            self.assertEqual(str(Path(tmp, "tools").resolve()), module._cwd(None))
+            with self.assertRaises(ValueError):
+                module._cwd(module.ROOT_DIR)
 
     def test_new_schema_requires_delta_or_full(self) -> None:
         schema = next(
