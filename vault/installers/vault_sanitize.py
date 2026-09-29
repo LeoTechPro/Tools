@@ -117,6 +117,8 @@ def now_stamp() -> str:
 
 
 def canonical_runtime_root(brain_root: Path) -> Path:
+    if sys.platform.startswith("linux"):
+        return Path("/var/lib/intdata/brain-runtime-vault").resolve()
     return (brain_root.parent / ".tmp" / "brain-runtime-vault").resolve()
 
 

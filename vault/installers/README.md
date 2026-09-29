@@ -34,7 +34,9 @@ python d:\int\tools\vault\installers\vault_sanitize.py --profile strict --apply
 
 `--enforce-whitelist` is kept as a deprecated alias for `--profile strict`.
 
-`--runtime-root` is optional for dry-run and Windows compatibility. The old computed default is inside the development tree on Linux and is blocked for `--apply`:
+`--runtime-root` is optional for dry-run and Windows compatibility. Linux dry-run
+defaults to the unprovisioned candidate `/var/lib/intdata/brain-runtime-vault`;
+Linux `--apply` still requires an explicit external path. Historical defaults:
 - Local: `D:\int\.tmp\brain-runtime-vault`
 - Old VDS: `/int/.tmp/brain-runtime-vault` (removed)
 

@@ -19,6 +19,8 @@ def now_stamp() -> str:
 
 
 def canonical_runtime_root(brain_root: Path) -> Path:
+    if sys.platform.startswith("linux"):
+        return Path("/var/lib/intdata/brain-runtime-vault").resolve()
     return (brain_root.parent / ".tmp" / "brain-runtime-vault").resolve()
 
 
@@ -74,7 +76,7 @@ def main() -> int:
     archive_base = (
         Path(args.archive_root).expanduser().resolve()
         if args.archive_root
-        else (brain_root.parent / ".tmp").resolve()
+        else (Path("/home/dev/backup/brain-runtime-vault") if sys.platform.startswith("linux") else brain_root.parent / ".tmp").resolve()
     )
     if args.apply and sys.platform.startswith("linux"):
         if not args.runtime_root or not args.archive_root:
