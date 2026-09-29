@@ -17,7 +17,7 @@ SERVER_VERSION = "0.1.0"
 IO_MODE = "framed"
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
-INT_ROOT = ROOT_DIR.parent
+INT_ROOT = Path(os.environ.get("INT_ROOT") or ROOT_DIR.parent).resolve()
 BRAIN_MCP = INT_ROOT / "brain" / "mcp" / "intbrain" / "bin" / "mcp-intbrain.py"
 
 
