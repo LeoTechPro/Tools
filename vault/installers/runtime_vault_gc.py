@@ -8,6 +8,8 @@ from pathlib import Path
 import shutil
 import sys
 
+from host_paths import require_archive_root, require_runtime_root
+
 
 UTC = timezone.utc
 
@@ -26,18 +28,18 @@ def legacy_runtime_root(brain_root: Path) -> Path:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Archive and clean vault runtime artifacts (canonical root in .tmp)."
+        description="Archive and clean selected vault runtime artifacts."
     )
-    parser.add_argument("--brain-root", default="dev@intdata.pro:/int/core/brain", help="int/core/brain repo root on dev@intdata.pro.")
+    parser.add_argument("--brain-root", default=r"D:\int\brain" if sys.platform == "win32" else "/home/dev/int/brain", help="Current Brain source checkout.")
     parser.add_argument(
         "--runtime-root",
         default="",
-        help="Runtime root override. Default: <brain-root parent>/.tmp/brain-runtime-vault",
+        help="Runtime root; required for Linux --apply and must be installed state outside checkout.",
     )
     parser.add_argument(
         "--archive-root",
         default="",
-        help="Archive base directory. Default: <brain-root parent>/.tmp",
+        help="Archive base; required for Linux --apply under a private /home/dev/backup directory.",
     )
     parser.add_argument("--dry-run", action="store_true", help="Print planned changes only.")
     parser.add_argument("--apply", action="store_true", help="Apply archive + cleanup.")
@@ -65,7 +67,7 @@ def main() -> int:
     using_legacy_override = runtime_root == legacy_root
     if using_legacy_override:
         print(
-            "warning: --runtime-root points to legacy path; prefer canonical <brain-root parent>/.tmp/brain-runtime-vault",
+            "warning: --runtime-root points inside the old checkout; Linux apply requires installed state",
             file=sys.stderr,
         )
 
@@ -74,6 +76,16 @@ def main() -> int:
         if args.archive_root
         else (brain_root.parent / ".tmp").resolve()
     )
+    if args.apply and sys.platform.startswith("linux"):
+        if not args.runtime_root or not args.archive_root:
+            raise SystemExit("explicit_runtime_and_archive_roots_required_on_linux")
+        try:
+            require_runtime_root(runtime_root)
+            require_archive_root(archive_base, runtime_root)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
+        if legacy_root.exists() and legacy_root.is_relative_to(Path("/home/dev/int")):
+            raise SystemExit(f"legacy_checkout_runtime_requires_separate_migration: {legacy_root}")
 
     stamp = now_stamp()
     archive_runtime_dir = archive_base / stamp / "brain-runtime-vault"

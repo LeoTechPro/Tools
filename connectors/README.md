@@ -26,9 +26,15 @@ and deployment.
 
 ## Validation
 
+Run committed source in a disposable copy so dependencies and build output do not
+land in the development checkout. For uncommitted code, create a temporary
+candidate containing those exact changes first.
+
 ```bash
-npm install --prefix /int/tools/connectors/sdk
-npm run build --prefix /int/tools/connectors/sdk
-npm install --prefix /int/tools/connectors/examples
-npm test --prefix /int/tools/connectors/examples
+connectors_check=$(mktemp -d /home/dev/tmp/connectors-check.XXXXXX)
+git -C /home/dev/int/tools archive HEAD connectors | tar -x -C "$connectors_check"
+npm ci --prefix "$connectors_check/connectors/sdk"
+npm run build --prefix "$connectors_check/connectors/sdk"
+npm ci --prefix "$connectors_check/connectors/examples"
+npm test --prefix "$connectors_check/connectors/examples"
 ```

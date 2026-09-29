@@ -9,6 +9,8 @@ import shutil
 from pathlib import Path
 import sys
 
+from host_paths import require_runtime_root
+
 
 UTC = timezone.utc
 
@@ -290,12 +292,12 @@ def action_to_dict(vault_root: Path, brain_root: Path, action: Action, exists: b
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Vault sanitization: move operational artifacts out of Obsidian vault.")
     parser.add_argument("--vault-root", default=r"D:\Yandex.Disk\2brain", help="Vault path (local or /2brain on VDS).")
-    parser.add_argument("--brain-root", default="dev@intdata.pro:/int/core/brain", help="int/core/brain repo root on dev@intdata.pro.")
+    parser.add_argument("--brain-root", default=r"D:\int\brain" if sys.platform == "win32" else "/home/dev/int/brain", help="Current Brain source checkout.")
     parser.add_argument("--tools-root", default=r"D:\int\tools", help="int/tools root path (local or /home/dev/int/tools on VDS).")
     parser.add_argument(
         "--runtime-root",
         default="",
-        help="Runtime root override. Default: <brain-root parent>/.tmp/brain-runtime-vault",
+        help="Runtime root; required for Linux --apply and must be installed state outside checkout.",
     )
     parser.add_argument("--dry-run", action="store_true", help="Print planned actions only.")
     parser.add_argument("--apply", action="store_true", help="Execute planned actions.")
@@ -335,10 +337,17 @@ def main() -> int:
         if args.runtime_root
         else canonical_runtime_root(brain_root)
     )
+    if args.apply and sys.platform.startswith("linux"):
+        if not args.runtime_root:
+            raise SystemExit("explicit_runtime_root_required_on_linux")
+        try:
+            require_runtime_root(runtime_root)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
     legacy_root = legacy_runtime_root(brain_root)
     if runtime_root == legacy_root:
         print(
-            "warning: --runtime-root points to legacy path; prefer canonical <brain-root parent>/.tmp/brain-runtime-vault",
+            "warning: --runtime-root points inside the old checkout; Linux apply requires installed state",
             file=sys.stderr,
         )
 
