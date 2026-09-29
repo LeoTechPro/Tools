@@ -21,6 +21,17 @@ import codex_recovery_bundle as recovery_bundle  # noqa: E402
 
 
 class HostRuntimeEntrypointsTest(unittest.TestCase):
+    def test_orphan_cleaner_install_rejects_checkout_runtime(self) -> None:
+        bash = shutil.which("bash")
+        if not bash:
+            self.skipTest("bash is required")
+        script = REPO_ROOT / "codex" / "install_orphan_cleaner_cron.sh"
+        for candidate in ("", str(REPO_ROOT / "codex" / "cleanup_agent_orphans.sh")):
+            env = {**os.environ, "CODEX_ORPHAN_CLEANER_BIN": candidate}
+            result = subprocess.run([bash, str(script)], env=env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("installed executable outside the checkout", result.stderr)
+
     def test_windows_dispatch_uses_powershell_adapters(self) -> None:
         original = host_bootstrap.current_platform
         original_ps = host_bootstrap.resolve_powershell

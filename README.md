@@ -199,7 +199,7 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 #### Codex Scripts
 
 `codex/` хранит versioned host-tooling для Codex CLI и смежного MCP-окружения.
-Канонические wrapper'ы и install/runbook-обвязка живут здесь; live runtime OpenClaw вынесен в `~/.openclaw`, а versioned overlay лежит в `/home/dev/int/tools/openclaw`. Codex home остаётся Codex-owned state и не синхронизируется из repo scripts.
+Канонические wrapper'ы и install/runbook-обвязка живут здесь; live runtime OpenClaw вынесен в `~/.openclaw`. Старого `tools/openclaw` в текущем checkout нет. Codex home остаётся Codex-owned state и не синхронизируется из repo scripts.
 
 ##### Контракт
 
@@ -208,8 +208,8 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 - Project overlays для старого `~/.codex/projects/*` не синхронизируются repo scripts; используйте native Codex plugin/skill/config mechanisms.
 - Пользовательское состояние tooling живёт вне checkout: `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/`; конфигурация и секреты — в `${XDG_CONFIG_HOME:-$HOME/.config}/intdata/credentials/` с закрытыми правами.
 - Исторические `.runtime/**` и `~/.codex/var` не являются источниками секретов для новых запусков.
-- Любые cron/systemd записи должны ссылаться на файлы из этого каталога, а не на продуктовые репозитории.
-- Канонический cron entrypoint для orphan cleaner: `/home/dev/int/tools/codex/cleanup_agent_orphans.sh`; lock/log writes go to `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/codex/**`.
+- Работающие cron/systemd записи должны ссылаться на установленный код вне `/home/dev/int`, а не на checkout.
+- `cleanup_agent_orphans.sh` — исходник, не рабочий cron entrypoint. Установщик cleaner требует явный `CODEX_ORPHAN_CLEANER_BIN` в `/usr/local/lib/intdata/`; возвращать расписание можно только после отдельного решения владельца. Lock/log writes go to `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/codex/**`.
 - `~/.codex/scripts/cleanup-agent-orphans.sh` допустим только как legacy compatibility wrapper для старых вызовов, без source-of-truth логики.
 - Codex-home sync/detach scripts were removed: Codex home changes require native Codex mechanisms or explicit manual owner action.
 - Для clean-room восстановления используйте `/home/dev/int/tools/codex/bin/codex-host-bootstrap`, `/home/dev/int/tools/codex/bin/codex-host-verify` и `/home/dev/int/tools/codex/bin/codex-recovery-bundle`.
@@ -219,7 +219,7 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 - логи repo-owned tooling: `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/codex/log/`
 - временное состояние repo-owned tooling: `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/codex/tmp/`; одноразовые сборки и тесты — `/home/dev/tmp/`
 - OpenClaw runtime: `~/.openclaw/`
-- OpenClaw overlay/runbooks: `/home/dev/int/tools/openclaw/`
+- OpenClaw overlay в этом checkout отсутствует; действующий runtime `~/.openclaw/` управляется отдельно.
 - прочий Codex runtime/state: Codex-owned `~/.codex/`, изменяется только native Codex mechanisms или explicit manual owner action
 - MCP credentials: `${XDG_CONFIG_HOME:-$HOME/.config}/intdata/credentials/`
 - Cloud state/logs: `${XDG_STATE_HOME:-$HOME/.local/state}/intdata-tools/cloud-access/`; rclone config: `${XDG_CONFIG_HOME:-$HOME/.config}/rclone/rclone.conf`
@@ -228,7 +228,7 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 
 - `duplex_bridge.py` — debate-bridge; его текущий default ещё указывает в checkout из незавершённой чужой правки. До согласованного исправления задавайте `CODEX_RUNTIME_ROOT` вне checkout.
 - `cleanup_agent_orphans.sh` — уборка осиротевших MCP/agent процессов
-- `install_orphan_cleaner_cron.sh` — установка канонической cron-записи на `/home/dev/int/tools/codex/cleanup_agent_orphans.sh`
+- `install_orphan_cleaner_cron.sh` — установка cron только при явном внешнем `CODEX_ORPHAN_CLEANER_BIN`; checkout-путь отвергается до изменения crontab.
 - `cloud_access.sh` — ручной доступ к `gdrive`/`yadisk` через стандартный пользовательский `rclone` config, XDG cache/state и mountpoints `~/vfs/intdata/*`.
 - `install_cloud_access.sh` — готовит только внешние пользовательские каталоги; unit-файлы `codex/systemd/` устанавливаются отдельно по явному решению, без ссылок на checkout.
 - `bin/` — MCP entrypoints и прочие Codex-facing launcher'ы
@@ -238,8 +238,8 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 - `assets/codex-home/` — legacy reference для старого Codex home overlay; не active sync source
 - `projects/` — legacy reference для старых project-specific overlay-файлов; не синхронизируется repo scripts
 - Codex-home sync/detach entrypoints were removed; use native Codex mechanisms or explicit manual owner action.
-- `bin/codex-host-bootstrap` — bootstrap рабочего минимума вне checkout, OpenClaw/cloud tooling; не пишет в Codex home
-- `bin/codex-host-verify` — проверка clean layout и целостности ссылок
+- `bin/codex-host-bootstrap` — исторический bootstrap: его OpenClaw-шаг сейчас ссылается на отсутствующий каталог, поэтому полный запуск не является процедурой восстановления этого хоста.
+- `bin/codex-host-verify` — проверка исторического layout; сейчас сообщает о несуществующих OpenClaw/cloud путях и не является подтверждением готовности действующего Google Drive VFS.
 - `bin/codex-recovery-bundle` — export/import шифрованного recovery-бандла с секретным runtime-слоем
 
 ##### Recovery Layout
@@ -248,7 +248,7 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 - Наши wrapper'ы, templates и policy остаются в `/home/dev/int/tools/codex`.
 - Самописные helper scripts для Codex не храним в `~/.codex/scripts`; home-контур допускается только для native tools и обязательных runtime instructions/compat wrappers, если их нельзя вынести из home-layout.
 - Живые секреты для MCP храним в `${XDG_CONFIG_HOME:-$HOME/.config}/intdata/credentials/`.
-- `OpenClaw` runtime живёт в `~/.openclaw`, а versioned overlay остаётся в `/home/dev/int/tools/openclaw`.
+- `OpenClaw` runtime живёт в `~/.openclaw`; прежний versioned overlay в Tools отсутствует.
 - Секретный слой OpenClaw для recovery bundle берётся из `~/.openclaw/secrets/`.
 - Repo scripts do not synchronize `assets/codex-home` or tracked `projects/` into Codex home.
 - dedicated Firefox MCP runtime использует repo-managed launcher'ы и project overlays отсюда; owner browser profile не является source-of-truth для automated browser-proof.
@@ -257,9 +257,9 @@ Do not add IntBrain memory/search/fetch, people graph, PM, or context tools to a
 
 1. Установить `codex-cli`.
 2. Восстановить секретный слой через `codex-recovery-bundle import`.
-3. Запустить `/home/dev/int/tools/codex/bin/codex-host-bootstrap` для внешнего пользовательского runtime bootstrap без изменения Codex home.
+3. Устанавливать нужные host-компоненты отдельно по их действующим процедурам; старый `codex-host-bootstrap` требует обновления OpenClaw/cloud контракта перед полным запуском.
 4. При необходимости выполнить `codex login`.
-5. Проверить контур через `/home/dev/int/tools/codex/bin/codex-host-verify` и `/home/dev/int/tools/openclaw/ops/verify.sh`.
+5. Проверить установленные службы, Google Drive VFS и Codex MCP отдельно; старый `codex-host-verify` пока фиксирует дрейф исторического layout.
 
 ##### Cloud Access
 
