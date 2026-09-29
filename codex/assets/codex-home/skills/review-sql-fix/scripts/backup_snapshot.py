@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -45,6 +46,8 @@ def _allowed_roots() -> list[Path]:
 
 
 def _default_backup_base() -> Path:
+    if os.name != "nt":
+        return Path("/home/dev/backup").resolve()
     # Use explicit drive-qualified roots first on Windows to avoid resolving POSIX-style paths
     # against an unintended current drive.
     candidates = [Path("D:/int/.tmp"), Path("C:/int/.tmp"), Path("/home/dev/tmp")]
@@ -52,6 +55,16 @@ def _default_backup_base() -> Path:
         if candidate.exists():
             return candidate.resolve()
     return candidates[0]
+
+
+def _ensure_backup_base(path: Path) -> None:
+    if os.name == "nt":
+        _ensure_allowed_target(path)
+        return
+    try:
+        path.resolve().relative_to(Path("/home/dev/backup").resolve())
+    except ValueError as exc:
+        raise BackupError(f"backup base must be under /home/dev/backup: {path}") from exc
 
 
 def _ensure_allowed_target(path: Path) -> None:
@@ -87,7 +100,7 @@ def create_snapshot(payload: dict[str, Any]) -> BackupResult:
         if backup_base_raw not in (None, "")
         else _default_backup_base()
     )
-    _ensure_allowed_target(backup_base)
+    _ensure_backup_base(backup_base)
     timestamp = _now_utc_stamp()
     backup_root = backup_base / timestamp / "review-sql-fix"
     runtime_dir = backup_root / "runtime"

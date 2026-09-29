@@ -113,8 +113,7 @@ The validator checks that every tracked non-hidden top-level directory is presen
 
 - `intnode coord --help` — справка по Git-aware coordination sessions, intents, cleanup и merge dry-run;
 - `python /home/dev/int/tools/vault/installers/vault_sanitize.py --dry-run --profile strict` — dry-run санитарной миграции vault;
-- `python /home/dev/int/tools/vault/installers/runtime_vault_gc.py --dry-run --brain-root /home/dev/int/brain` — dry-run архивации и очистки canonical runtime-root (`/home/dev/int/.tmp/brain-runtime-vault`);
-- `python /home/dev/int/tools/vault/installers/runtime_vault_gc.py --dry-run --runtime-root /home/dev/int/brain/runtime/vault` — compatibility-режим для legacy runtime-path (с deprecation warning);
+- `python3 -B /home/dev/int/tools/vault/installers/runtime_vault_gc.py --dry-run --brain-root /home/dev/int/brain --runtime-root /var/lib/intdata/brain-runtime-vault --archive-root /home/dev/backup/brain-runtime-vault` — просмотр плана для внешних путей; эти кандидаты ещё не развёрнуты как рабочий runtime;
 - `python3 /home/dev/int/tools/dba/lib/dba.py doctor --profile intbrain-dev-admin` — проверка native PostgreSQL CLI, TCP и SQL для внешнего DBA-профиля; требует настроенный защищённый файл и подключение к БД;
 - исторический `dba migrate status` использует legacy `migration_manifest.lock` и не заменяет native runner текущего `/home/dev/int/platform`;
 - В owner-facing командах `commit/push/publish/выкатывай/публикуй` агент обязан сначала проверить `git status --short --branch`; при неожиданных или чужих modified/untracked файлах нужно остановиться и спросить владельца. Самостоятельно `stash`/`restore`/`checkout --`/`reset --hard`/`clean`/скрывать/откладывать "чужие" правки из publication-state запрещено.

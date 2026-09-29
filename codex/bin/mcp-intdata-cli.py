@@ -121,8 +121,8 @@ DBA_TOOLS = [
 ]
 
 VAULT_TOOLS = [
-    _tool("intdata_vault_sanitize", "Run vault sanitizer. Defaults to dry-run; non-dry-run requires confirmation.", {**COMMON_RUN_PROPS, **_mutation_props(), "dry_run": {"type": "boolean"}, "vault_root": _path_prop("Vault root. Defaults to D:/int/2brain on this host."), "brain_root": _path_prop("Brain repo root. Defaults to D:/int/core/brain on this host."), "tools_root": _path_prop("Tools repo root. Defaults to D:/int/tools."), "runtime_root": _path_prop("Runtime vault root override."), "args": _args_prop()}),
-    _tool("intdata_runtime_vault_gc", "Run runtime vault GC. Defaults to dry-run; non-dry-run requires confirmation.", {**COMMON_RUN_PROPS, **_mutation_props(), "dry_run": {"type": "boolean"}, "brain_root": _path_prop("Brain repo root. Defaults to D:/int/core/brain on this host."), "runtime_root": _path_prop("Runtime vault root override."), "archive_root": _path_prop("Archive root override. Defaults to D:/int/.tmp."), "args": _args_prop()}),
+    _tool("intdata_vault_sanitize", "Run vault sanitizer. Defaults to dry-run; non-dry-run requires confirmation.", {**COMMON_RUN_PROPS, **_mutation_props(), "dry_run": {"type": "boolean"}, "vault_root": _path_prop("Vault source root; override the default if it is absent."), "brain_root": _path_prop("Brain source root; defaults to the managed core/brain checkout."), "tools_root": _path_prop("Tools source root; defaults to this repository."), "runtime_root": _path_prop("Installed runtime root; required for Linux apply."), "args": _args_prop()}),
+    _tool("intdata_runtime_vault_gc", "Run runtime vault GC. Defaults to dry-run; non-dry-run requires confirmation.", {**COMMON_RUN_PROPS, **_mutation_props(), "dry_run": {"type": "boolean"}, "brain_root": _path_prop("Brain source root; defaults to the managed core/brain checkout."), "runtime_root": _path_prop("Installed runtime root; required for Linux apply."), "archive_root": _path_prop("Private backup root; required for Linux apply."), "args": _args_prop()}),
 ]
 
 RUNTIME_TOOLS.extend(VAULT_TOOLS)

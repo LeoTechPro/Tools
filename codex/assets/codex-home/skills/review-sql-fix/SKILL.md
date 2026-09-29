@@ -47,7 +47,8 @@ Always generate 5 artifacts in `output_dir`:
 - SQL mutations are forbidden in `prod`.
 
 2. Run backup phase.
-- Create snapshot in `/int/.tmp/<UTC>/review-sql-fix/`.
+- On this Linux host, create the recovery snapshot in `/home/dev/backup/<UTC>/review-sql-fix/`.
+- Keep disposable reports in `/home/dev/tmp`; never use scratch or a source checkout as `backup_base`.
 - Save runtime metadata and copies of target repo paths before edits.
 
 3. Run precheck.
@@ -75,7 +76,7 @@ Always generate 5 artifacts in `output_dir`:
 ## Script Usage
 
 ```bash
-python scripts/fix_pipeline.py --input /path/to/fix-input.json --output-dir /path/to/out
+python3 -B scripts/fix_pipeline.py --input /path/to/fix-input.json --output-dir /home/dev/tmp/review-sql-fix-output
 ```
 
 ## References

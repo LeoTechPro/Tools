@@ -20,6 +20,8 @@ Any failure before `apply` blocks all mutations.
 
 ## Backup Snapshot Content
 
+- On this Linux host, the default `backup_base` is `/home/dev/backup`; overrides must stay within it.
+- `/home/dev/tmp` is for disposable output artifacts, not recovery snapshots.
 - runtime metadata always includes: environment/scope/source/fix_mode.
 - if provided, include `role_snapshot`, `settings_snapshot`, `ddl_snapshot`.
 - if `pg_dump_path` exists under allowed roots, copy file into runtime snapshot.
